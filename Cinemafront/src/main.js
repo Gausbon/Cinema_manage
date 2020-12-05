@@ -11,6 +11,7 @@ import 'element-ui/lib/theme-chalk/index.css'
 Vue.use(VueResource)
 Vue.use(ElementUI)
 Vue.config.productionTip = false
+Vue.http.options.emulateJSON = true
 
 router.beforeEach((to, from, next) => {
   if (to.meta.title) {
