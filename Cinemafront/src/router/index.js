@@ -1,7 +1,8 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import Main from '@/components/Main'
-import VipMain from '@/components/VipMain'
+import Movie from '@/components/Movie'
+import VipMovie from '@/components/VipMovie'
+import EmpMovie from '@/components/EmpMovie'
 
 Vue.use(Router)
 
@@ -10,14 +11,14 @@ Router.prototype.push = function push(location) {
   return originalPush.call(this, location).catch(err => err)
 }
 
-export default new Router({
+const router = new Router({
   routes: [
     {
       path: '/',
-      name: 'Main',
-      component: Main,
+      name: 'Movie',
+      component: Movie,
       meta: {
-        title: "电影院管理系统"
+        title: "柒伍捌电影院"
       },
       children: [
 
@@ -25,11 +26,39 @@ export default new Router({
     },
     {
        path: '/vip',
-       name: 'VipMain',
-       component: VipMain,
+       name: 'VipMovie',
+       component: VipMovie,
        meta: {
-         title: "电影院管理系统"
+         title: "柒伍捌电影院",
+         requireAuth: true
+       },
+     },
+     {
+       path: '/emp',
+       name: 'EmpMovie',
+       component: EmpMovie,
+       meta: {
+         title: "柒伍捌电影院",
+         requireAuth: true
        },
      }
   ]
-})
+});
+
+export default router
+
+router.beforeEach((to, from, next) => {
+  if (to.meta.requireAuth) {
+    if (sessionStorage.getItem("token") == 'true') {
+      console.log("authorize success")
+      next()
+    } else {
+      console.log("return to main")
+      next({
+        path: '/'
+      })
+    }
+  } else {
+    next();
+  }
+});

@@ -22,38 +22,16 @@
   </el-dialog>
 
   <el-header style = "background-color: #ffffff; text-align: right">
-    <el-menu default-openeds="['1']" style = "float: left">
-      <el-submenu index="1">
-        <template slot="title">主页面</template>
-      <el-submenu>
+    <el-menu default-active="1" class="el-menu-demo" mode="horizontal" 
+    @select="handleSelect" style = "float: left">
+      <el-menu-item index="1">电影</el-menu-item>
+      <el-menu-item index="2">周边</el-menu-item>
     </el-menu>
     <el-button type="primary" round @click="login()">登 录</el-button>
     <el-button round>注 册</el-button>
   </el-header>
 
   <el-container style="height: 600px">
-    <el-aside width="200px" style="background-color: rgb(238, 241, 246)">
-      <el-menu :default-openeds="['1', '3']">
-        <el-submenu index="1">
-          <template slot="title"><i class="el-icon-message"></i>导航一</template>
-          <el-menu-item-group>
-            <template slot="title">分组一</template>
-            <el-menu-item index="1-1">选项1</el-menu-item>
-            <el-menu-item index="1-2">选项2</el-menu-item>
-          </el-menu-item-group>
-          <el-menu-item-group title="分组2">
-            <el-menu-item index="1-3">选项3</el-menu-item>
-          </el-menu-item-group>
-          <el-submenu index="1-4">
-            <template slot="title">选项4</template>
-            <el-menu-item index="1-4-1">选项4-1</el-menu-item>
-          </el-submenu>
-        </el-submenu>
-      </el-menu>
-    </el-aside>
-
-
-
     <el-container>
       <el-header style="text-align: right; font-size: 12px">
         <el-container>
@@ -61,8 +39,32 @@
             <span style="font-size: 130%; float: left">目前上映影片数量：{{movieCount}}</span>
           </el-aside>
           <el-main></el-main>
-          <el-aside width = "100px">
-            <span>尚未登录</span>
+          <el-aside width = "300px" mode="horizontal">
+            <el-dropdown :hide-on-click="false">
+                <el-button v-if="sort_type=='online'"> <span>日期</span>
+                  <i class="el-icon-sort-up" v-if="reverse==false"></i>
+                  <i class="el-icon-sort-down" v-if="reverse==true"></i>
+                </el-button>
+                <el-button v-else-if="sort_type=='mname'"> <span>名称</span>
+                  <i class="el-icon-sort-up" v-if="reverse==false"></i>
+                  <i class="el-icon-sort-down" v-if="reverse==true"></i>
+                </el-button>
+                <el-button v-else-if="sort_type=='type'"> <span>类型</span>
+                  <i class="el-icon-sort-up" v-if="reverse==false"></i>
+                  <i class="el-icon-sort-down" v-if="reverse==true"></i>
+                </el-button>
+                <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item>
+                  <el-radio-group v-model="reverse" @click.native="showMovies()">
+                    <el-radio :label="false">正序</el-radio>
+                    <el-radio :label="true">倒序</el-radio>
+                  </el-radio-group>
+                </el-dropdown-item>
+                <el-dropdown-item @click.native="sort_type='online'; showMovies()">日期</el-dropdown-item>
+                <el-dropdown-item @click.native="sort_type='mname'; showMovies()">名称</el-dropdown-item>
+                <el-dropdown-item @click.native="sort_type='type'; showMovies()">类型</el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
           </el-aside>
         </el-conttainer>
       </el-header>
@@ -115,7 +117,9 @@
       return {
         movieList: [],
         movieCount: 0,
+        sort_type: 'online',
         loginDialogVisible: false,
+        reverse: false,
         loginModel: { name: '', pass: '' },
         loginRules: {
           name: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
@@ -124,7 +128,8 @@
       }
     },
     mounted: function() {
-      this.showMovies()
+      this.showMovies(),
+      this.onInput()
     },
     methods: {
       onInput(){
@@ -141,15 +146,14 @@
         return output+date.getDate()+"日";
       },
       showMovies(){
+        console.log("show movie")
         this.$http.post('http://127.0.0.1:8000/api/show_movie',
-          JSON.stringify({curFilm : true, curDate : new Date()}), {emulateJSON: true})
+          JSON.stringify({curFilm:true, curDate : new Date(), r:this.reverse, t:this.sort_type}), {emulateJSON: true})
           .then((response) => {
               var res = JSON.parse(response.bodyText)
-              console.log(res)
               if (res.error_num == 0) {
                 var curDate = new Date()
                 this.movieList = res['list']
-                console.log(typeof(this.movieList))
                 this.movieCount = this.movieList.length
               } else {
                 this.$message.error('查询电影失败')
@@ -168,8 +172,15 @@
               console.log(res)
               if (res.error_num == 0) {
                 if (res.type == "vip") {
-                  console.log('vip')
-                  this.$router.push({ path: '/vip' })
+                  console.log('vip login, vip num = ' + res.id)
+                  sessionStorage.setItem("token", 'true');
+                  this.$message({ type: 'success', message: '登录成功!'});
+                  this.$router.push({ path: '/vip', query: {id: res.id} })
+                } else if (res.type == 'movie') {
+                  console.log('movie employee login, employee num = ' + res.id)
+                  sessionStorage.setItem("token", 'true');
+                  this.$message({ type: 'success', message: '登录成功!'});
+                  this.$router.push({ path: '/emp', query: {id: res.id} })
                 }
               } else {
                 if (res.error_num == 2)
