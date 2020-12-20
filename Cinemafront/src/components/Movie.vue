@@ -174,13 +174,15 @@
                 if (res.type == "vip") {
                   console.log('vip login, vip num = ' + res.id)
                   sessionStorage.setItem("token", 'true');
+                  sessionStorage.setItem("type", 'vip');
                   this.$message({ type: 'success', message: '登录成功!'});
                   this.$router.push({ path: '/vip', query: {id: res.id} })
                 } else if (res.type == 'movie') {
                   console.log('movie employee login, employee num = ' + res.id)
                   sessionStorage.setItem("token", 'true');
+                  sessionStorage.setItem("type", 'movie');
                   this.$message({ type: 'success', message: '登录成功!'});
-                  this.$router.push({ path: '/emp', query: {id: res.id} })
+                  this.$router.push({ path: '/empmovie', query: {id: res.id} })
                 }
               } else {
                 if (res.error_num == 2)

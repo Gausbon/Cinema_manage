@@ -2,7 +2,7 @@
 
 <el-container style="margin-top: -50px; margin-bottom: -50px; border: 1px solid #eee">
   <el-dialog
-  title="注 销"
+  title="注销用户"
   style="text-align: center"
   :visible.sync="logoutDialogVisible"
   width="30%"
@@ -13,10 +13,10 @@
   </el-dialog>
 
   <el-header style = "background-color: #ffffff; text-align: right">
-    <el-menu default-active="1" class="el-menu-demo" mode="horizontal" 
+    <el-menu default-active="2" class="el-menu-demo" mode="horizontal" 
     @select="handleSelect" style = "float: left">
-      <el-menu-item index="1">电影</el-menu-item>
-      <el-menu-item index="2" @click="to_scene">场次</el-menu-item>
+      <el-menu-item index="1" @click="to_movie">电影</el-menu-item>
+      <el-menu-item index="2">场次</el-menu-item>
     </el-menu>
     <el-button round @click="logout">注 销</el-button>
   </el-header>
@@ -37,12 +37,10 @@
     <el-container>
       <el-header style="text-align: right; font-size: 12px">
         <el-container>
-          <el-aside>
-            <span style="font-size: 130%; float: left">目前上映影片数量：{{movieCount}}</span>
-          </el-aside>
           <el-main></el-main>
           <el-aside mode="horizontal">
-            <span style="font-size: 130%">您好，亲爱的{{vip_list.vname}}</span><span></span>
+            <span style="font-size: 130%">您好，亲爱的{{vip_list.ename}}</span>
+            <el-divider direction="vertical"></el-divider>
             <el-dropdown :hide-on-click="false">
                 <el-button v-if="sort_type=='online'"> <span>日期</span>
                   <i class="el-icon-sort-up" v-if="reverse==false"></i>
@@ -63,9 +61,9 @@
                     <el-radio :label="true">倒序</el-radio>
                   </el-radio-group>
                 </el-dropdown-item>
-                <el-dropdown-item @click.native="sort_type='online'; showMovies()">日期</el-dropdown-item>
-                <el-dropdown-item @click.native="sort_type='mname'; showMovies()">名称</el-dropdown-item>
-                <el-dropdown-item @click.native="sort_type='type'; showMovies()">类型</el-dropdown-item>
+                <el-dropdown-item>日期</el-dropdown-item>
+                <el-dropdown-item>名称</el-dropdown-item>
+                <el-dropdown-item>类型</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
           </el-aside>
@@ -74,27 +72,38 @@
 
       <el-main>
 
-        <el-table :data="movieList">
-          <el-table-column prop="name" label="电影名称">
-          <template scope="scope"> {{ scope.row.fields.mname }} </template>
+        <el-table :data="sceneList">
+          <el-table-column label="影院名称">
+          <template scope="scope"> {{ scope.row.fields.cname }} </template>
           </el-table-column>
-          <el-table-column prop="address" label="导演">
-          <template scope="scope"> {{ scope.row.fields.director }} </template>
+          <el-table-column label="位置">
+          <template scope="scope"> {{ scope.row.fields.cloc }} </template>
           </el-table-column>
-          <el-table-column prop="address" label="主演">
-          <template scope="scope"> {{ scope.row.fields.actor }} </template>
+          <el-table-column label="影院规模">
+          <template scope="scope"> {{ scope.row.fields.csize }} </template>
           </el-table-column>
-          <el-table-column prop="address" label="类型">
-          <template scope="scope"> {{ scope.row.fields.type }} </template>
-          </el-table-column>
-          <el-table-column prop="address" label="时长">
-          <template scope="scope"> {{ scope.row.fields.time }} </template>
-          </el-table-column>
-          <el-table-column prop="address" label="上映时间">
-          <template scope="scope"> {{showDate(scope.row.fields.online)}} </template>
-          </el-table-column>
-          <el-table-column prop="address" label="下映时间">
-          <template scope="scope"> {{ showDate(scope.row.fields.offline) }} </template>
+          <el-table-column type="expand">
+            <template slot-scope="scope">
+              <el-table :data="scope.row.fields.scene">
+                <template slot="empty"> 暂无场次<br>
+                </template>
+                <el-table-column label="影厅">
+                <template slot-scope="scope"> {{ scope.row.hname }} </template>
+                </el-table-column>
+                <el-table-column label="电影名称">
+                <template slot-scope="scope"> {{ scope.row.mname }} </template>
+                </el-table-column>
+                <el-table-column label="上映时间">
+                <template slot-scope="scope"> {{ showTime(scope.row.ontime) }} </template>
+                </el-table-column>
+                <el-table-column label="时长" min-width="50%">
+                <template slot-scope="scope"> {{ scope.row.time }}分 </template>
+                </el-table-column>
+                <el-table-column label="票价" min-width="50%">
+                <template slot-scope="scope"> {{ scope.row.price }} </template>
+                </el-table-column>
+              </el-table>
+            </template>
           </el-table-column>
         </el-table>
       </el-main>
@@ -120,42 +129,55 @@
     data() {
       return {
         id: 0,
-        movieList: [],
+        sceneList: [],
+        cinemaList: [],
+        hallList: [],
         vip_list: [],
-        movieCount: 0,
-        sort_type: 'online',
-        logoutDialogVisible: false,
+        movieList: [],
         reverse: false,
+        logoutDialogVisible: false
       }
     },
     mounted: function() {
       this.showvip(),
-      this.showMovies(),
+      this.showScene(),
+      this.getHall(),
       this.onInput()
     },
     watch: {
-      reverse: 'showMovies'
+        'sceneModel.cno': {
+          handler(newName, oldName) {
+            this.getHallList();
+          },
+          immediate: true,
+          deep: true
+        }
     },
     methods: {
       onInput(){
         this.$forceUpdate();
       },
-      showDate(d){
-        var date = new Date(d)
+      showTime(d){
+        var date = new Date(d) 
         var output = date.getFullYear()+"年"
         if (date.getMonth()+1 < 10)
           output = output + "0"
         output = output + (date.getMonth()+1)+"月"
         if (date.getDate() < 10)
           output = output + "0"
-        return output+date.getDate()+"日";
+        output = output+date.getDate()+"日"
+        if (date.getHours()<10)
+          output = output + "0"
+        output = output+date.getHours()+":"
+        if (date.getMinutes()<10)
+          output = output + "0"
+        return output+date.getMinutes();
       },
       showvip(){
         if (sessionStorage.getItem("type") != 'vip') {
           sessionStorage.setItem("token", 'false')
           this.$router.push({ path: '/' })
         }
-          
         this.id = this.$route.query.id
         console.log("show vip")
         this.$http.post('http://127.0.0.1:8000/api/show_vip',
@@ -171,32 +193,65 @@
               }
           })
       },
-      showMovies(){
-        console.log("show movie")
-        this.$http.post('http://127.0.0.1:8000/api/show_movie',
-          JSON.stringify({curFilm:true, curDate : new Date(), r:this.reverse, t:this.sort_type}), {emulateJSON: true})
+      showScene(){
+        console.log("show scene")
+        this.$http.get('http://127.0.0.1:8000/api/show_scene')
           .then((response) => {
-              var res = JSON.parse(response.bodyText)
-              if (res.error_num == 0) {
-                var curDate = new Date()
-                this.movieList = res['list']
-                this.movieCount = this.movieList.length
-              } else {
-                this.$message.error('查询电影失败')
-                console.log(res['msg'])
-              }
+            var res = JSON.parse(response.bodyText)
+            if (res.error_num == 0) {
+              this.sceneList = res.list
+            } else {
+               this.$message.error('删除电影失败')
+               console.log(res['msg'])
+            }
           })
+      },
+      getHall(){
+        console.log("get hall")
+        this.$http.post('http://127.0.0.1:8000/api/show_hall_movie',
+          JSON.stringify({curDate:new Date()}), {emulateJSON: true})
+          .then((response) => {
+            var res = JSON.parse(response.bodyText)
+            if (res.error_num == 0) {
+              this.cinemaList = res.clist
+              this.movieList = res.mlist
+              this.getHallList()
+            } else {
+               this.$message.error('获取影院信息失败')
+               console.log(res['msg'])
+            }
+          })
+      },
+      getHallList() {
+        var i = 0, j = 0;
+        var tmp_hno = 0;
+        for (i = 0; i < this.cinemaList.length; i++) {
+          if (this.cinemaList[i].cno == this.sceneModel.cno) {
+            this.hallList = this.cinemaList[i].hall;
+            if (this.hallList.length > 0)
+              tmp_hno = this.hallList[0].hno;
+            for (j = 0; j < this.hallList.length; j++) {
+              if (this.hallList[j].hno == this.sceneModel.hno)
+                return;
+            }
+            this.sceneModel.hno = tmp_hno;
+            return;
+          }
+        }
       },
       logout() {
         this.logoutDialogVisible = true // 显示弹框
       },
-      confirmLogout() {
+      confirmLogout(){
         this.$message({ type: 'success', message: '注销成功!'});
         sessionStorage.setItem("token", 'false');
         this.$router.push("/");
       },
-      to_scene() {
-        this.$router.push({ path: '/vipscene', query: {id: this.id} })
+      strip(str) {
+        return str.replace(/\s*/g,"")
+      },
+      to_movie() {
+        this.$router.push({ path: '/vipmovie', query: {id: this.id} })
       }
     }
   };

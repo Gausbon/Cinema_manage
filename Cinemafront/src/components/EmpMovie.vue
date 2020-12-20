@@ -27,7 +27,7 @@
   title="电影操作"
   style="text-align: center"
   :visible.sync="movieDialogVisible"
-  width="40%"
+  width="30%"
   :before-close="handleClose">
     <el-form label-width="80px" :model="movieModel" :rules="movieRules" ref="movieModel" >
       <el-form-item label="电影名称" prop="mname">
@@ -75,7 +75,7 @@
     <el-menu default-active="1" class="el-menu-demo" mode="horizontal" 
     @select="handleSelect" style = "float: left">
       <el-menu-item index="1">电影</el-menu-item>
-      <el-menu-item index="2" disable>周边</el-menu-item>
+      <el-menu-item index="2" @click="to_scene">场次</el-menu-item>
     </el-menu>
     <el-button round @click="logout">注 销</el-button>
   </el-header>
@@ -107,7 +107,8 @@
           </el-aside>
           <el-main></el-main>
           <el-aside mode="horizontal">
-            <span style="font-size: 130%">您好，亲爱的{{emp_list.ename}}</span><span></span>
+            <span style="font-size: 130%">您好，亲爱的{{emp_list.ename}}</span>
+            <el-divider direction="vertical"></el-divider>
             <el-dropdown :hide-on-click="false">
                 <el-button v-if="sort_type=='online'"> <span>日期</span>
                   <i class="el-icon-sort-up" v-if="reverse==false"></i>
@@ -146,7 +147,6 @@
           <el-table-column prop="address" label="类型">
           <template scope="scope"> {{ scope.row.fields.type }} </template>
           </el-table-column>
-          </el-table-column>
           <el-table-column prop="address" label="上映时间">
           <template scope="scope"> {{showDate(scope.row.fields.online)}} </template>
           </el-table-column>
@@ -156,7 +156,7 @@
           <el-table-column label="操作">
             <template slot-scope="scope">
               <el-button size="mini" type="primary" @click.native="insert_movie">添加</el-button>
-              <el-button size="mini" @click.native="update_movie(scope)">编辑</el-button>
+              <el-button size="mini" @click.native="update_movie(scope.row.fields)">编辑</el-button>
               <el-button size="mini" type="danger" 
               @click.native="movieModel.last_name=scope.row.fields.mname; delDialogVisible = true">
               删除</el-button>
@@ -240,6 +240,10 @@
         return output+date.getDate()+"日";
       },
       showemp(){
+        if (sessionStorage.getItem("type") != 'movie') {
+          sessionStorage.setItem("token", 'false')
+          this.$router.push({ path: '/' })
+        }
         this.id = this.$route.query.id
         console.log("show emp")
         this.$http.post('http://127.0.0.1:8000/api/show_employee',
@@ -290,21 +294,21 @@
           time: 120, 
           type: '', 
           online:new Date(), 
-          offline:d.setTime(d.getTime()+24*60*60*1000) };
+          offline:new Date(d.setTime(d.getTime()+24*60*60*1000)) };
         this.movieDialogVisible = true;
       },
       update_movie(scope){
         this.new_movie = false;
-        console.log(scope.row.fields.mno)
+        console.log(scope.mno)
         this.movieModel = { 
-          last_name: scope.row.fields.mname,
-          mname: scope.row.fields.mname.replace(/\s*/g,""), 
-          director: scope.row.fields.director.replace(/\s*/g,""), 
-          actor: scope.row.fields.actor.replace(/\s*/g,""), 
-          time: scope.row.fields.time,  
-          type: scope.row.fields.type, 
-          online: scope.row.fields.online,
-          offline: scope.row.fields.offline };
+          last_name: scope.mname,
+          mname: scope.mname.replace(/\s*/g,""), 
+          director: scope.director.replace(/\s*/g,""), 
+          actor: scope.actor.replace(/\s*/g,""), 
+          time: scope.time,  
+          type: scope.type, 
+          online: scope.online,
+          offline: scope.offline };
         this.movieDialogVisible = true;
       },
       confirmMovie(){
@@ -318,7 +322,7 @@
                 this.movieDialogVisible = false;
                 this.showMovies();
               } else if (res.error_num == 2) {
-                this.$message.error('修改电影失败，影片名称重复')
+                this.$message.error('添加电影失败，影片名称重复')
                 console.log(res['msg'])
               } else {
                 this.$message.error('添加电影失败')
@@ -355,10 +359,18 @@
                 this.delDialogVisible = false;
                 this.showMovies();
               } else {
-                this.$message.error('删除电影失败')
+                if (res.error_num == 2)
+                  this.$message.error('删除电影失败，存在包含该电影的场次')
+                else
+                  this.$message.error('删除电影失败')
                 console.log(res['msg'])
+                this.delDialogVisible = false;
+                this.showMovies();
               }
           })
+      },
+      to_scene() {
+        this.$router.push({ path: '/empscene', query: {id: this.id} })
       }
     }
   };

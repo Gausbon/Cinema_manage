@@ -2,7 +2,9 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import Movie from '@/components/Movie'
 import VipMovie from '@/components/VipMovie'
+import VipScene from '@/components/VipScene'
 import EmpMovie from '@/components/EmpMovie'
+import EmpScene from '@/components/EmpScene'
 
 Vue.use(Router)
 
@@ -25,8 +27,8 @@ const router = new Router({
       ]
     },
     {
-       path: '/vip',
-       name: 'VipMovie',
+       path: '/vipmovie',
+       name: 'Vipmovie',
        component: VipMovie,
        meta: {
          title: "柒伍捌电影院",
@@ -34,9 +36,27 @@ const router = new Router({
        },
      },
      {
-       path: '/emp',
+       path: '/vipscene',
+       name: 'VipScene',
+       component: VipScene,
+       meta: {
+         title: "柒伍捌电影院",
+         requireAuth: true
+       },
+     },
+     {
+       path: '/empmovie',
        name: 'EmpMovie',
        component: EmpMovie,
+       meta: {
+         title: "柒伍捌电影院",
+         requireAuth: true
+       },
+     },
+     {
+       path: '/empscene',
+       name: 'EmpScene',
+       component: EmpScene,
        meta: {
          title: "柒伍捌电影院",
          requireAuth: true
@@ -50,10 +70,8 @@ export default router
 router.beforeEach((to, from, next) => {
   if (to.meta.requireAuth) {
     if (sessionStorage.getItem("token") == 'true') {
-      console.log("authorize success")
       next()
     } else {
-      console.log("return to main")
       next({
         path: '/'
       })
