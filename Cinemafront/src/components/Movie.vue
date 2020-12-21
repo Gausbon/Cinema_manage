@@ -176,7 +176,7 @@
                   sessionStorage.setItem("token", 'true');
                   sessionStorage.setItem("type", 'vip');
                   this.$message({ type: 'success', message: '登录成功!'});
-                  this.$router.push({ path: '/vip', query: {id: res.id} })
+                  this.$router.push({ path: '/vipmovie', query: {id: res.id} })
                 } else if (res.type == 'movie') {
                   console.log('movie employee login, employee num = ' + res.id)
                   sessionStorage.setItem("token", 'true');

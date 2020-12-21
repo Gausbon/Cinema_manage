@@ -15,4 +15,7 @@ urlpatterns = [
     url(r'update_scene$', views.update_scene),
     url(r'show_hall_movie$', views.show_hall_movie),
     url(r'delete_scene$', views.delete_scene),
+    url(r'vip_credit$', views.vip_credit),
+    url(r'get_disabled$', views.get_disabled),
+    url(r'add_ticket$', views.add_ticket)
 ]

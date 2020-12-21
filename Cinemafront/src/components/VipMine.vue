@@ -13,32 +13,6 @@
   </el-dialog>
 
   <el-dialog
-  title="购票操作"
-  style="text-align: center"
-  :visible.sync="ticketDialogVisible"
-  width="50%"
-  :before-close="handleClose">
-    <el-form label-position="top" v-model="ticketModel" ref="ticketModel">
-      <el-form-item label="座位">
-      <el-container> <el-main style="background-color: #B3C0D1;">
-      <el-row v-for="index of (hallsize/10)">
-      <el-checkbox-group v-model="ticketModel.ticketList">
-        <el-checkbox-button size="mini" v-for="i of 10" :label="i+(index-1)*10" :disabled="checkdup(i+(index-1)*10)==true">
-        {{get_checkbox_botton_word(i+(index-1)*10)}}</el-checkbox-button>
-      </el-checkbox-group>
-      </el-row>
-      </el-main></el-container>
-      <el-row style="margin-top:30px"><span>您已购票：{{ticketModel.ticketList.length}}张</span></el-row>
-      
-      <span>原单价：{{price}}元&nbsp;&nbsp;&nbsp;&nbsp;</span>
-      <span>会员单价：{{parseInt(price * vip_list.sale)}}元</span><br>
-      <span>总价：{{ticketModel.price}}元</span>
-    </el-form>
-    <el-button round @click="confirmTicket" type="primary">确 定 </el-button>
-    <el-button round @click="ticketDialogVisible = false">取 消</el-button>
-  </el-dialog>
-
-  <el-dialog
   title="充值操作"
   style="text-align: center"
   :visible.sync="creditDialogVisible"
@@ -50,10 +24,11 @@
   </el-dialog>
 
   <el-header style = "background-color: #ffffff; text-align: right">
-    <el-menu default-active="2" class="el-menu-demo" mode="horizontal" 
+    <el-menu default-active="3" class="el-menu-demo" mode="horizontal" 
     @select="handleSelect" style = "float: left">
       <el-menu-item index="1" @click="to_movie">电影</el-menu-item>
       <el-menu-item index="2">场次</el-menu-item>
+      <el-menu-item index="3">我的</el-menu-item>
     </el-menu>
     <el-button round @click="logout">注 销</el-button>
   </el-header>
@@ -89,46 +64,46 @@
       </el-header>
 
       <el-main>
-
-        <el-table :data="sceneList">
-          <el-table-column label="影院名称">
-          <template scope="scope"> {{ scope.row.fields.cname }} </template>
-          </el-table-column>
-          <el-table-column label="位置">
-          <template scope="scope"> {{ scope.row.fields.cloc }} </template>
-          </el-table-column>
-          <el-table-column label="影院规模">
-          <template scope="scope"> {{ scope.row.fields.csize }} </template>
-          </el-table-column>
-          <el-table-column type="expand">
-            <template slot-scope="scope">
-              <el-table :data="scope.row.fields.scene">
-                <template slot="empty"> 暂无场次<br>
-                </template>
-                <el-table-column label="影厅">
-                <template slot-scope="scope"> {{ scope.row.hname }} </template>
-                </el-table-column>
-                <el-table-column label="电影名称">
-                <template slot-scope="scope"> {{ scope.row.mname }} </template>
-                </el-table-column>
-                <el-table-column label="上映时间">
-                <template slot-scope="scope"> {{ showTime(scope.row.ontime) }} </template>
-                </el-table-column>
-                <el-table-column label="时长" min-width="50%">
-                <template slot-scope="scope"> {{ scope.row.time }}分 </template>
-                </el-table-column>
-                <el-table-column label="票价" min-width="50%">
-                <template slot-scope="scope"> {{ scope.row.price }} </template>
-                </el-table-column>
+        <el-container>
+          <el-header style = "background-color: #ffffff; text-align: right">
+            <el-menu default-active="1" class="el-menu-demo" mode="horizontal" 
+            @select="handleSelect">
+              <el-menu-item index="1">电影票</el-menu-item>
+              <el-menu-item index="2">周边</el-menu-item>
+            </el-menu>
+          </el-header>
+          <el-aside>
+            <el-table :data="ticketList">
+              <el-table-column label="影院">
+              <template scope="scope"> {{ scope.row.fields.cname }} </template>
+              </el-table-column>
+              <el-table-column label="位置">
+              <template scope="scope"> {{ scope.row.fields.cloc }} </template>
+              </el-table-column>
+              <el-table-column label="影厅">
+              <template scope="scope"> {{ scope.row.fields.hname }} </template>
+              </el-table-column>
+              <el-table-column label="电影">
+              <template scope="scope"> {{ scope.row.fields.mname }} </template>
+              </el-table-column>
+              <el-table-column label="座位号">
+              <template scope="scope"> {{ scope.row.fields.loc }} </template>
+              </el-table-column>
+              <el-table-column label="上映时间">
+              <template scope="scope"> {{ scope.row.fields.ontime }} </template>
+              </el-table-column>
+              <el-table-column label="价格">
+              <template scope="scope"> {{ scope.row.fields.price }} </template>
+              </el-table-column>
                  <el-table-column label="操作">
                   <template slot-scope="scope">
-                    <el-button size="mini" type="primary" @click.native="buy_ticket(scope.row)">购票</el-button>
+                    <el-button size="mini" type="danger" @click.native="buy_ticket(scope.row)">退票</el-button>
                   </template>
                 </el-table-column>
-              </el-table>
-            </template>
-          </el-table-column>
-        </el-table>
+            </el-table>    
+          </el-aside>
+        </el-container>
+        
       </el-main>
     </el-container>
   </el-container>
@@ -158,15 +133,8 @@
       return {
         id: 0,
         credits: 0,
-        sceneList: [],
+        ticketList: [],
         vip_list: [],
-        checkList: [],
-        price: 0,
-        discount: 0,
-        ticketModel: { vno: 0, sno: 0, ticketList:[], price:0 },
-        hallsize: 60,
-        reverse: false,
-        ticketDialogVisible: false,
         logoutDialogVisible: false,
         creditDialogVisible: false,
       }
@@ -174,17 +142,10 @@
     mounted: function() {
       this.init(),
       this.showvip(),
-      this.showScene(),
+      this.showTicket(),
       this.onInput()
     },
     watch: {
-      'ticketModel.ticketList': {
-          handler(newName, oldName) {
-            this.ticketModel.price = this.total_price();
-          },
-          immediate: true,
-          deep: true
-        }
     },
     methods: {
       onInput(){
@@ -229,15 +190,16 @@
               }
           })
       },
-      showScene(){
+      showTicket(){
         console.log("show scene")
-        this.$http.get('http://127.0.0.1:8000/api/show_scene')
+        this.$http.get('http://127.0.0.1:8000/api/show_ticket',
+          JSON.stringify({id: this.id}), {emulateJSON: true})
           .then((response) => {
             var res = JSON.parse(response.bodyText)
             if (res.error_num == 0) {
-              this.sceneList = res.list
+              this.ticketList = res.list
             } else {
-               this.$message.error('删除电影失败')
+               this.$message.error('查询电影票失败')
                console.log(res['msg'])
             }
           })
@@ -268,51 +230,6 @@
         sessionStorage.setItem("token", 'false');
         this.$router.push("/");
       },
-      buy_ticket(scope) {
-        this.ticketModel.vno = this.id;
-        this.ticketModel.ticketList = [];
-        this.ticketModel.sno = scope.sno;
-        this.price = scope.price;
-        this.$http.post('http://127.0.0.1:8000/api/get_disabled',
-          JSON.stringify({sno: scope.sno}), {emulateJSON: true})
-          .then((response) => {
-              var res = JSON.parse(response.bodyText)
-              if (res.error_num == 0) {
-                this.checkList = res.d_list;
-                this.hallsize = res.hv;
-              } else {
-                this.$message.error('查询场次失败')
-                this.creditDialogVisible = false;
-                console.log(res['msg'])
-                return;
-              }
-          })
-        this.ticketDialogVisible = true;
-      },
-      confirmTicket(){
-        if (this.ticketModel.price > this.vip_list.vaccount) {
-          this.$message.error('购买失败，您的余额不足！');
-          return;
-        } else if (this.ticketModel.ticketList.length == 0) {
-          this.$message.error('请选择一个座位！');
-          return;
-        }
-        this.$http.post('http://127.0.0.1:8000/api/add_ticket',
-          JSON.stringify(this.ticketModel), {emulateJSON: true})
-          .then((response) => {
-              var res = JSON.parse(response.bodyText)
-              if (res.error_num == 0) {
-                this.$message({ type: 'success', message: '购票成功！'});
-                this.showvip();
-                this.ticketDialogVisible = false;
-              } else {
-                this.$message.error('购票失败')
-                this.ticketDialogVisible = false;
-                console.log(res['msg'])
-                return;
-              }
-          })
-      },
       strip(str) {
         return str.replace(/\s*/g,"")
       },
@@ -327,14 +244,6 @@
       to_movie() {
         this.$router.push({ path: '/vipmovie', query: {id: this.id} })
       },
-      total_price() {
-        return parseInt(this.ticketModel.ticketList.length * this.price * this.vip_list.sale);
-      },
-      get_checkbox_botton_word(b) {
-        if (this.checkdup(b)==true)  return '禁';
-        else if (b < 10) return '0' + b.toString();
-        else return b;
-      }
     }
   };
 </script>

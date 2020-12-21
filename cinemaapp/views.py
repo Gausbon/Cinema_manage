@@ -82,9 +82,13 @@ def show_vip(request):
     print("show vip id: " + dict['id'])
     try:
         vip = models.Vip.objects.filter(vno=int(dict['id']))
+        vip = json.loads(serializers.serialize("json", vip))[0]['fields']
+        vip_level = models.Vip_level.objects.filter(vlevel=vip['vlevel'])
+        vip_level = json.loads(serializers.serialize("json", vip_level))[0]['fields']
+        vip['sale'] = vip_level['vsale']
         response['msg'] = 'success'
         response['error_num'] = 0
-        response['list'] = json.loads(serializers.serialize("json", vip))[0]['fields']
+        response['list'] = vip
     except Exception as e:
         response['msg'] = str(e)
         response['error_num'] = 1
@@ -334,6 +338,121 @@ def update_scene(request):
         s.price = dict['price']
         s.ontime = dict['ontime']
         s.save()
+        response['msg'] = 'success'
+        response['error_num'] = 0
+    except Exception as e:
+        response['error_num'] = 1
+        response['msg'] = str(e)
+    return JsonResponse(response)
+
+
+@require_http_methods(["GET", "POST"])
+@csrf_exempt
+def vip_credit(request):
+    print("method: vip credit")
+    response = {}
+    dict = json.loads(request.body)
+    print(dict)
+    try:
+        v = models.Vip.objects.get(vno=dict['id'])
+        v.vaccount = v.vaccount + dict['credits']
+        v.save()
+        response['msg'] = 'success'
+        response['error_num'] = 0
+    except Exception as e:
+        response['error_num'] = 1
+        response['msg'] = str(e)
+    return JsonResponse(response)
+
+
+@require_http_methods(["GET", "POST"])
+@csrf_exempt
+def buy_ticket(request):
+    print("method: buy ticket")
+    response = {}
+    dict = json.loads(request.body)
+    try:
+        v = models.Vip.objects.get(vno=dict['id'])
+        v.vaccount = v.vaccount + dict['credits']
+        v.save()
+        response['msg'] = 'success'
+        response['error_num'] = 0
+    except Exception as e:
+        response['error_num'] = 1
+        response['msg'] = str(e)
+    return JsonResponse(response)
+
+
+@require_http_methods(["GET", "POST"])
+@csrf_exempt
+def get_disabled(request):
+    print("method: buy ticket")
+    response = {}
+    dict = json.loads(request.body)
+    d_list = []
+    print(dict['sno'])
+    try:
+        t = models.Ticket.objects.filter(sno=dict['sno'])
+        t = json.loads(serializers.serialize("json", t))
+        s = models.Scene.objects.get(sno=dict['sno'])
+        h = models.Hall.objects.get(hno=s.hno.hno)
+        h_t = models.Hall_type.objects.get(htype=h.htype.htype)
+        for item in t:
+            d_list.append(item['fields']['loc'])
+        print(d_list)
+        response['d_list'] = d_list
+        response['hv'] = h_t.hvolume
+        response['msg'] = 'success'
+        response['error_num'] = 0
+    except Exception as e:
+        response['error_num'] = 1
+        response['msg'] = str(e)
+    return JsonResponse(response)
+
+
+@require_http_methods(["GET", "POST"])
+@csrf_exempt
+def add_ticket(request):
+    print("method: add ticket")
+    response = {}
+    dict = json.loads(request.body)
+    print(dict)
+    try:
+        total_price = 0
+        v = models.Vip.objects.get(vno=dict['vno'])
+        s = models.Scene.objects.get(sno=dict['sno'])
+        t_list = dict['ticketList']
+        for item in t_list:
+            models.Ticket.objects.create(
+                vno=v,
+                sno=s,
+                loc=item,
+                price=int(v.vlevel.vsale * s.price)
+            )
+            total_price += int(v.vlevel.vsale * s.price)
+        if total_price > v.vaccount:
+            response['error_num'] = 2
+            response['msg'] = "not enough money"
+        else:
+            v.vaccount = v.vaccount - total_price
+            v.save()
+            response['msg'] = 'success'
+            response['error_num'] = 0
+    except Exception as e:
+        response['error_num'] = 1
+        response['msg'] = str(e)
+    return JsonResponse(response)
+
+
+@require_http_methods(["GET", "POST"])
+@csrf_exempt
+def show_ticket(request):
+    print("method: show ticket")
+    response = {}
+    dict = json.loads(request.body)
+    try:
+        t = models.All_ticket.objects.filter(vno=dict['id'])
+        response['ticket'] = json.loads(serializers.serialize("json", t))
         response['msg'] = 'success'
         response['error_num'] = 0
     except Exception as e:

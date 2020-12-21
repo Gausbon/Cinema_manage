@@ -214,6 +214,7 @@
       }
     },
     mounted: function() {
+      this.init(),
       this.showemp(),
       this.showScene(),
       this.getHall(),
@@ -368,11 +369,11 @@
           .then((response) => {
               var res = JSON.parse(response.bodyText)
               if (res.error_num == 0) {
-                this.$message({ type: 'success', message: '修改电影成功!'});
+                this.$message({ type: 'success', message: '修改场次成功!'});
                 this.sceneDialogVisible = false;
                 this.showScene();
               } else {
-                this.$message.error('修改电影失败，未知错误')
+                this.$message.error('修改场次失败，未知错误')
                 console.log(res['msg'])
               }
           })
