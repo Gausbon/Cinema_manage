@@ -76,6 +76,7 @@
     @select="handleSelect" style = "float: left">
       <el-menu-item index="1">电影</el-menu-item>
       <el-menu-item index="2" @click="to_scene">场次</el-menu-item>
+      <el-menu-item index="3" @click="to_sou">周边</el-menu-item>
     </el-menu>
     <el-button round @click="logout">注 销</el-button>
   </el-header>
@@ -371,6 +372,9 @@
       },
       to_scene() {
         this.$router.push({ path: '/empscene', query: {id: this.id} })
+      },
+      to_sou() {
+        this.$router.push({ path: '/empsou', query: {id: this.id} })
       }
     }
   };

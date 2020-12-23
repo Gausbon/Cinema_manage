@@ -2,7 +2,7 @@
 
 <el-container style="margin-top: -50px; margin-bottom: -50px; border: 1px solid #eee">
   <el-dialog
-  title="注 销"
+  title="注销用户"
   style="text-align: center"
   :visible.sync="logoutDialogVisible"
   width="30%"
@@ -18,19 +18,30 @@
   :visible.sync="creditDialogVisible"
   width="30%"
   :before-close="handleClose">
-    <span>请输入要充值的金额</span><br><br>
     <el-input-number v-model="credits" @change="handleChange" :min="100" :step="10"></el-input-number><br><br><br>
     <el-button style="margin-top:20px" round @click="confirmCredits" type="primary">确 定 </el-button>
     <el-button round @click="creditDialogVisible = false">取 消</el-button>
   </el-dialog>
 
+  <el-dialog
+  title="退款操作"
+  style="text-align: center"
+  :visible.sync="retDialogVisible"
+  width="30%"
+  :before-close="handleClose">
+    <span>确定要退款吗</span><br><br>
+    <span>退款商品：{{sou_scope.fields.soname}}</span><br><br><span style="font-color: #eb2a03">你只能得到半价赔偿，即{{this.retprice}}元</spam><br>
+    <el-button style="margin-top:20px" round @click="confirmRet" type="primary">确 定 </el-button>
+    <el-button round @click="retDialogVisible = false">取 消</el-button>
+  </el-dialog>
+
   <el-header style = "background-color: #ffffff; text-align: right">
-    <el-menu default-active="1" class="el-menu-demo" mode="horizontal" 
+    <el-menu default-active="4" class="el-menu-demo" mode="horizontal" 
     @select="handleSelect" style = "float: left">
-      <el-menu-item index="1">电影</el-menu-item>
+      <el-menu-item index="1" @click="to_movie">电影</el-menu-item>
       <el-menu-item index="2" @click="to_scene">场次</el-menu-item>
       <el-menu-item index="3" @click="to_sou">周边</el-menu-item>
-      <el-menu-item index="4" @click="to_myticket">我的</el-menu-item>
+      <el-menu-item index="4">我的</el-menu-item>
     </el-menu>
     <el-button round @click="logout">注 销</el-button>
   </el-header>
@@ -57,23 +68,20 @@
     <el-container>
       <el-header style="text-align: right; font-size: 12px">
         <el-container>
-          <el-aside>
-            <span style="font-size: 130%; float: left">目前上映影片数量：{{movieCount}}</span>
-          </el-aside>
           <el-main></el-main>
           <el-aside mode="horizontal">
-            <span style="font-size: 130%">您好，亲爱的{{vip_list.vname}}</span><span></span>
+            <span style="font-size: 130%">您好，亲爱的{{vip_list.vname}}</span>
             <el-divider direction="vertical"></el-divider>
             <el-dropdown :hide-on-click="false">
-                <el-button v-if="sort_type=='online'"> <span>日期</span>
+                <el-button v-if="sort_type=='soname'"> <span>周边名称</span>
                   <i class="el-icon-sort-up" v-if="reverse==false"></i>
                   <i class="el-icon-sort-down" v-if="reverse==true"></i>
                 </el-button>
-                <el-button v-else-if="sort_type=='mname'"> <span>名称</span>
+                <el-button v-else-if="sort_type=='mname'"> <span>电影名称</span>
                   <i class="el-icon-sort-up" v-if="reverse==false"></i>
                   <i class="el-icon-sort-down" v-if="reverse==true"></i>
                 </el-button>
-                <el-button v-else-if="sort_type=='type'"> <span>类型</span>
+                <el-button v-else-if="sort_type=='soprice'"> <span>价格</span>
                   <i class="el-icon-sort-up" v-if="reverse==false"></i>
                   <i class="el-icon-sort-down" v-if="reverse==true"></i>
                 </el-button>
@@ -84,9 +92,9 @@
                     <el-radio :label="true">倒序</el-radio>
                   </el-radio-group>
                 </el-dropdown-item>
-                <el-dropdown-item @click.native="sort_type='online'; showMovies()">日期</el-dropdown-item>
-                <el-dropdown-item @click.native="sort_type='mname'; showMovies()">名称</el-dropdown-item>
-                <el-dropdown-item @click.native="sort_type='type'; showMovies()">类型</el-dropdown-item>
+                <el-dropdown-item @click.native="sort_type='soname'; showSousingle()">周边名称</el-dropdown-item>
+                <el-dropdown-item @click.native="sort_type='mname'; showSousingle()">电影名称</el-dropdown-item>
+                <el-dropdown-item @click.native="sort_type='soprice'; showSousingle()">价格</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
           </el-aside>
@@ -94,30 +102,34 @@
       </el-header>
 
       <el-main>
-
-        <el-table :data="movieList">
-          <el-table-column prop="name" label="电影名称">
-          <template scope="scope"> {{ scope.row.fields.mname }} </template>
-          </el-table-column>
-          <el-table-column prop="address" label="导演">
-          <template scope="scope"> {{ scope.row.fields.director }} </template>
-          </el-table-column>
-          <el-table-column prop="address" label="主演">
-          <template scope="scope"> {{ scope.row.fields.actor }} </template>
-          </el-table-column>
-          <el-table-column prop="address" label="类型">
-          <template scope="scope"> {{ scope.row.fields.type }} </template>
-          </el-table-column>
-          <el-table-column prop="address" label="时长">
-          <template scope="scope"> {{ scope.row.fields.time }} </template>
-          </el-table-column>
-          <el-table-column prop="address" label="上映时间">
-          <template scope="scope"> {{showDate(scope.row.fields.online)}} </template>
-          </el-table-column>
-          <el-table-column prop="address" label="下映时间">
-          <template scope="scope"> {{ showDate(scope.row.fields.offline) }} </template>
-          </el-table-column>
-        </el-table>
+        <el-container>
+          <el-header style = "background-color: #ffffff; text-align: right">
+            <el-menu default-active="2" class="el-menu-demo" mode="horizontal" 
+            @select="handleSelect">
+              <el-menu-item index="1">我的电影票</el-menu-item>
+              <el-menu-item index="2">我的周边</el-menu-item>
+            </el-menu>
+          </el-header>
+          <el-main>
+            <el-table :data="sousingleList">
+              <el-table-column label="电影名称">
+              <template scope="scope"> {{ scope.row.fields.mname }} </template>
+              </el-table-column>
+              <el-table-column label="周边名称">
+              <template scope="scope"> {{ scope.row.fields.soname }} </template>
+              </el-table-column>
+              <el-table-column label="价格">
+              <template scope="scope"> {{ scope.row.fields.price }} </template>
+              </el-table-column>
+                 <el-table-column label="操作">
+                  <template slot-scope="scope">
+                    <el-button size="mini" type="danger" @click.native="ret_sou(scope.row)">退款</el-button>
+                  </template>
+                </el-table-column>
+            </el-table>    
+          </el-aside>
+        </el-container>
+        
       </el-main>
     </el-container>
   </el-container>
@@ -134,6 +146,11 @@
   .el-aside {
     color: #333;
   }
+
+  .el-checkbox__input.is-checked .el-checkbox__inner {
+    background-color: #B3C0D1;
+    border-color: #B3C0D1;
+  }
 </style>
 
 <script>
@@ -142,25 +159,29 @@
       return {
         id: 0,
         credits: 0,
-        movieList: [],
+        retprice: 0,
+        sousingleList: [],
         vip_list: [],
-        movieCount: 0,
-        sort_type: 'online',
+        sou_scope: {fields: []},
         logoutDialogVisible: false,
         creditDialogVisible: false,
+        retDialogVisible: false,
+        sort_type: 'mname',
         reverse: false,
       }
     },
     mounted: function() {
       this.init(),
       this.showvip(),
-      this.showMovies(),
+      this.showSousingle(),
       this.onInput()
     },
     watch: {
-      reverse: 'showMovies'
     },
     methods: {
+      onInput(){
+        this.$forceUpdate();
+      },
       init() {
         if (sessionStorage.getItem("type") != 'vip') {
             sessionStorage.setItem("token", 'false')
@@ -168,19 +189,6 @@
         }
         this.id = this.$route.query.id;
         console.log(this.id);
-      },
-      onInput(){
-        this.$forceUpdate();
-      },
-      showDate(d){
-        var date = new Date(d)
-        var output = date.getFullYear()+"年"
-        if (date.getMonth()+1 < 10)
-          output = output + "0"
-        output = output + (date.getMonth()+1)+"月"
-        if (date.getDate() < 10)
-          output = output + "0"
-        return output+date.getDate()+"日";
       },
       showvip(){
         console.log("show vip")
@@ -197,29 +205,19 @@
               }
           })
       },
-      showMovies(){
-        console.log("show movie")
-        this.$http.post('http://127.0.0.1:8000/api/show_movie',
-          JSON.stringify({curFilm:true, curDate : new Date(), r:this.reverse, t:this.sort_type}), {emulateJSON: true})
+      showSousingle(){
+        console.log("show sou single")
+        this.$http.post('http://127.0.0.1:8000/api/show_sousingle',
+          JSON.stringify({id: this.id, r:this.reverse, t:this.sort_type}), {emulateJSON: true})
           .then((response) => {
-              var res = JSON.parse(response.bodyText)
-              if (res.error_num == 0) {
-                var curDate = new Date()
-                this.movieList = res['list']
-                this.movieCount = this.movieList.length
-              } else {
-                this.$message.error('查询电影失败')
-                console.log(res['msg'])
-              }
+            var res = JSON.parse(response.bodyText)
+            if (res.error_num == 0) {
+              this.sousingleList = res.list
+            } else {
+               this.$message.error('查询电影票失败')
+               console.log(res['msg'])
+            }
           })
-      },
-      logout() {
-        this.logoutDialogVisible = true // 显示弹框
-      },
-      confirmLogout() {
-        this.$message({ type: 'success', message: '注销成功!'});
-        sessionStorage.setItem("token", 'false');
-        this.$router.push("/");
       },
       confirmCredits() {
         var last_credits = this.credits;
@@ -238,15 +236,57 @@
               }
           })
       },
-      to_scene() {
-        this.$router.push({ path: '/vipscene', query: {id: this.id} })
+      confirmRet() {
+        console.log('confirm ret');
+          this.$http.post('http://127.0.0.1:8000/api/ret_sou',
+          JSON.stringify({id: this.id, retid: this.sou_scope.pk}), {emulateJSON: true})
+          .then((response) => {
+              var res = JSON.parse(response.bodyText)
+              if (res.error_num == 0) {
+                this.$message({ type: 'success', message: '退款成功!'});
+                this.retDialogVisible = false;
+                this.showvip();
+                this.showSousingle();
+              } else {
+                this.$message.error('退款失败')
+                this.retDialogVisible = false;
+                console.log(res['msg'])
+              }
+          })
+      },
+      ret_sou(scope) {
+        this.sou_scope = scope;
+        this.retprice = scope.fields.price / 2;
+        this.retDialogVisible = true;
+      },
+      logout() {
+        this.logoutDialogVisible = true // 显示弹框
+      },
+      confirmLogout(){
+        this.$message({ type: 'success', message: '注销成功!'});
+        sessionStorage.setItem("token", 'false');
+        this.$router.push("/");
+      },
+      strip(str) {
+        return str.replace(/\s*/g,"")
+      },
+      checkdup(x) {
+        var i = 0;
+        for (i = 0; i < this.checkList.length; i++) {
+          if (this.checkList[i] == x)
+            return true;
+        }
+        return false;
+      },
+      to_movie() {
+        this.$router.push({ path: '/vipmovie', query: {id: this.id} })
       },
       to_sou() {
         this.$router.push({ path: '/vipsou', query: {id: this.id} })
       },
-      to_myticket() {
-        this.$router.push({ path: '/vipmyticket', query: {id: this.id} })
-      }
+      to_scene() {
+        this.$router.push({ path: '/vipscene', query: {id: this.id} })
+      },
     }
   };
 </script>

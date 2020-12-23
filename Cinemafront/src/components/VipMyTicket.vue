@@ -23,12 +23,24 @@
     <el-button round @click="creditDialogVisible = false">取 消</el-button>
   </el-dialog>
 
+  <el-dialog
+  title="退票操作"
+  style="text-align: center"
+  :visible.sync="retDialogVisible"
+  width="30%"
+  :before-close="handleClose">
+    <span>确定要退票吗</span><br><br><span style="font-color: #eb2a03">你只能得到半价赔偿，即{{this.retprice}}元</spam><br>
+    <el-button style="margin-top:20px" round @click="confirmRet" type="primary">确 定 </el-button>
+    <el-button round @click="retDialogVisible = false">取 消</el-button>
+  </el-dialog>
+
   <el-header style = "background-color: #ffffff; text-align: right">
-    <el-menu default-active="3" class="el-menu-demo" mode="horizontal" 
+    <el-menu default-active="4" class="el-menu-demo" mode="horizontal" 
     @select="handleSelect" style = "float: left">
       <el-menu-item index="1" @click="to_movie">电影</el-menu-item>
-      <el-menu-item index="2">场次</el-menu-item>
-      <el-menu-item index="3">我的</el-menu-item>
+      <el-menu-item index="2" @click="to_scene">场次</el-menu-item>
+      <el-menu-item index="3" @click="to_sou">周边</el-menu-item>
+      <el-menu-item index="4">我的</el-menu-item>
     </el-menu>
     <el-button round @click="logout">注 销</el-button>
   </el-header>
@@ -68,11 +80,11 @@
           <el-header style = "background-color: #ffffff; text-align: right">
             <el-menu default-active="1" class="el-menu-demo" mode="horizontal" 
             @select="handleSelect">
-              <el-menu-item index="1">电影票</el-menu-item>
-              <el-menu-item index="2">周边</el-menu-item>
+              <el-menu-item index="1">我的电影票</el-menu-item>
+              <el-menu-item index="2" @click="to_mysou">我的周边</el-menu-item>
             </el-menu>
           </el-header>
-          <el-aside>
+          <el-main>
             <el-table :data="ticketList">
               <el-table-column label="影院">
               <template scope="scope"> {{ scope.row.fields.cname }} </template>
@@ -86,18 +98,18 @@
               <el-table-column label="电影">
               <template scope="scope"> {{ scope.row.fields.mname }} </template>
               </el-table-column>
-              <el-table-column label="座位号">
+              <el-table-column label="座位号" min-width="50%">
               <template scope="scope"> {{ scope.row.fields.loc }} </template>
               </el-table-column>
               <el-table-column label="上映时间">
-              <template scope="scope"> {{ scope.row.fields.ontime }} </template>
+              <template scope="scope"> {{ showTime(scope.row.fields.ontime) }} </template>
               </el-table-column>
-              <el-table-column label="价格">
+              <el-table-column label="价格" min-width="50%">
               <template scope="scope"> {{ scope.row.fields.price }} </template>
               </el-table-column>
                  <el-table-column label="操作">
                   <template slot-scope="scope">
-                    <el-button size="mini" type="danger" @click.native="buy_ticket(scope.row)">退票</el-button>
+                    <el-button size="mini" type="danger" @click.native="ret_ticket(scope.row)">退票</el-button>
                   </template>
                 </el-table-column>
             </el-table>    
@@ -135,8 +147,11 @@
         credits: 0,
         ticketList: [],
         vip_list: [],
+        retprice: 0,
+        retid: 0,
         logoutDialogVisible: false,
         creditDialogVisible: false,
+        retDialogVisible: false
       }
     },
     mounted: function() {
@@ -192,7 +207,7 @@
       },
       showTicket(){
         console.log("show scene")
-        this.$http.get('http://127.0.0.1:8000/api/show_ticket',
+        this.$http.post('http://127.0.0.1:8000/api/show_ticket',
           JSON.stringify({id: this.id}), {emulateJSON: true})
           .then((response) => {
             var res = JSON.parse(response.bodyText)
@@ -206,7 +221,6 @@
       },
       confirmCredits() {
         var last_credits = this.credits;
-        console.log(this.id);
           this.$http.post('http://127.0.0.1:8000/api/vip_credit',
           JSON.stringify({id: this.id, credits: this.credits}), {emulateJSON: true})
           .then((response) => {
@@ -221,6 +235,29 @@
                 console.log(res['msg'])
               }
           })
+      },
+      confirmRet() {
+        console.log('confirm ret');
+          this.$http.post('http://127.0.0.1:8000/api/ret_ticket',
+          JSON.stringify({id: this.id, retid: this.retid}), {emulateJSON: true})
+          .then((response) => {
+              var res = JSON.parse(response.bodyText)
+              if (res.error_num == 0) {
+                this.$message({ type: 'success', message: '退票成功!'});
+                this.retDialogVisible = false;
+                this.showvip();
+                this.showTicket();
+              } else {
+                this.$message.error('退票失败')
+                this.retDialogVisible = false;
+                console.log(res['msg'])
+              }
+          })
+      },
+      ret_ticket(scope) {
+        this.retid = scope.pk;
+        this.retprice = scope.fields.price / 2;
+        this.retDialogVisible = true;
       },
       logout() {
         this.logoutDialogVisible = true // 显示弹框
@@ -243,6 +280,12 @@
       },
       to_movie() {
         this.$router.push({ path: '/vipmovie', query: {id: this.id} })
+      },
+      to_scene() {
+        this.$router.push({ path: '/vipscene', query: {id: this.id} })
+      },
+      to_mysou() {
+        this.$router.push({ path: '/vipmysou', query: {id: this.id} })
       },
     }
   };

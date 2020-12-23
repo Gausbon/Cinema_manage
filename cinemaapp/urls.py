@@ -17,5 +17,11 @@ urlpatterns = [
     url(r'delete_scene$', views.delete_scene),
     url(r'vip_credit$', views.vip_credit),
     url(r'get_disabled$', views.get_disabled),
-    url(r'add_ticket$', views.add_ticket)
+    url(r'add_ticket$', views.add_ticket),
+    url(r'show_ticket$', views.show_ticket),
+    url(r'ret_ticket$', views.ret_ticket),
+    url(r'show_sou$', views.show_sou),
+    url(r'add_sou$', views.add_sou),
+    url(r'show_sousingle$', views.show_sousingle),
+    url(r'ret_sou$', views.ret_sou),
 ]

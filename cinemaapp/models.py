@@ -94,6 +94,7 @@ class Ticket(models.Model):
 
 class All_ticket(models.Model):
     vno = models.IntegerField()
+    loc = models.IntegerField()
     cname = models.CharField(max_length=30)
     cloc = models.CharField(max_length=30)
     hname = models.CharField(max_length=30)
@@ -101,3 +102,35 @@ class All_ticket(models.Model):
     ontime = models.DateTimeField()
     offtime = models.DateTimeField()
     price = models.IntegerField()
+
+
+class Sou(models.Model):
+    sono = models.AutoField(primary_key=True)
+    mno = models.ForeignKey(Movie, on_delete=models.PROTECT)
+    soname = models.CharField(max_length=30)
+    soprice = models.IntegerField()
+    sostore = models.IntegerField()
+
+
+class Sousingle(models.Model):
+    sosno = models.AutoField(primary_key=True)
+    sono = models.ForeignKey(Sou, on_delete=models.PROTECT)
+    vno = models.ForeignKey(Vip, on_delete=models.CASCADE)
+    price = models.IntegerField()
+
+
+class All_sou(models.Model):
+    mname = models.CharField(max_length=30)
+    soname = models.CharField(max_length=30)
+    soprice = models.IntegerField()
+    sostore = models.IntegerField()
+    online = models.DateTimeField()
+    offline = models.DateTimeField()
+
+
+class All_sousingle(models.Model):
+    mname = models.CharField(max_length=30)
+    soname = models.CharField(max_length=30)
+    price = models.IntegerField()
+    vname = models.CharField(max_length=30)
+    vno = models.IntegerField()

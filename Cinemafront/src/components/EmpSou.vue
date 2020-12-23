@@ -13,59 +13,45 @@
   </el-dialog>
 
   <el-dialog
-  title="删除场次"
+  title="删除周边"
   style="text-align: center"
   :visible.sync="delDialogVisible"
   width="30%"
   :before-close="handleClose">
-    <span>确定要删除该场次吗</span><br><br><br>
-    <el-button round @click="delete_scene" type="primary">确 定 </el-button>
+    <span>确定要删除该周边吗</span><br><br><br>
+    <el-button round @click="delete_sou" type="primary">确 定 </el-button>
     <el-button round @click="delDialogVisible = false">取 消</el-button>
   </el-dialog>
 
   <el-dialog
-  title="场次操作"
+  title="周边操作"
   style="text-align: center"
-  :visible.sync="sceneDialogVisible"
+  :visible.sync="souDialogVisible"
   width="30%"
   :before-close="handleClose">
-    <el-form label-width="80px" :model="sceneModel" :rules="sceneRules" ref="sceneModel" >
-      <el-form-item label="影院" prop="cno">
-        <el-select v-model="sceneModel.cno" placeholder="请选择影院">
-          <el-option v-for="(value) in cinemaList" :value="value.cno" :label="strip(value.cname)"></el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item label="影厅" prop="hno">
-        <el-select v-model="sceneModel.hno" placeholder="请选择影厅">
-          <el-option v-for="(value) in hallList" :value="value.hno" :label="strip(value.hname)"></el-option>
-        </el-select>
-      </el-form-item>
+    <el-form label-width="80px" :model="souModel" :rules="souRules" ref="souModel" >
       <el-form-item label="电影" prop="mno">
-        <el-select v-model="sceneModel.mno" placeholder="请选择电影">
-          <el-option v-for="(value) in movieList" :value="value.fields.mno" :label="strip(value.fields.mname)"></el-option>
+        <el-select v-model="souModel.mno" placeholder="请选择电影">
+          <el-option v-for="(value) in movieList" :value="value.mno" :label="strip(value.mname)"></el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="上映时间" prop="ontime">
-        <el-date-picker
-          v-model="sceneModel.ontime"
-          type="datetime"
-          placeholder="上映时间">
-        </el-date-picker>
+      <el-form-item label="周边名称" prop="soname">
+        <el-input v-model="souModel.soname"></el-input>
       </el-form-item>
-      <el-form-item label="价格" prop="price">
-        <el-input-number v-model="sceneModel.price" @change="handleChange" :min="30" :max="300" :step="5"></el-input-number>
+      <el-form-item label="库存量" prop="sostore">
+        <el-input-number v-model="souModel.sosotre" @change="handleChange" :min="1" :step="1"></el-input-number>
       </el-form-item>
     </el-form>
-    <el-button round @click="confirmScene" type="primary">确 定 </el-button>
-    <el-button round @click="sceneDialogVisible = false">取 消</el-button>
+    <el-button round @click="confirmSou" type="primary">确 定 </el-button>
+    <el-button round @click="souDialogVisible = false">取 消</el-button>
   </el-dialog>
 
   <el-header style = "background-color: #ffffff; text-align: right">
-    <el-menu default-active="2" class="el-menu-demo" mode="horizontal" 
+    <el-menu default-active="3" class="el-menu-demo" mode="horizontal" 
     @select="handleSelect" style = "float: left">
       <el-menu-item index="1" @click="to_movie">电影</el-menu-item>
-      <el-menu-item index="2">场次</el-menu-item>
-      <el-menu-item index="3" @click="to_sou">电影</el-menu-item>
+      <el-menu-item index="2" @click="to_scene">场次</el-menu-item>
+      <el-menu-item index="3">场次</el-menu-item>
     </el-menu>
     <el-button round @click="logout">注 销</el-button>
   </el-header>
@@ -128,46 +114,25 @@
       <el-main>
 
         <el-table :data="sceneList">
-          <el-table-column label="影院名称">
-          <template scope="scope"> {{ scope.row.fields.cname }} </template>
+          <el-table-column label="电影名称">
+          <template scope="scope"> {{ scope.row.fields.mname }} </template>
           </el-table-column>
-          <el-table-column label="位置">
-          <template scope="scope"> {{ scope.row.fields.cloc }} </template>
+          <el-table-column label="周边名称">
+          <template scope="scope"> {{ scope.row.fields.soname }} </template>
           </el-table-column>
-          <el-table-column label="影院规模">
-          <template scope="scope"> {{ scope.row.fields.csize }} </template>
+          <el-table-column label="周边价格">
+          <template scope="scope"> {{ scope.row.fields.soprice }}元 </template>
           </el-table-column>
-          <el-table-column type="expand">
+          <el-table-column label="周边库存">
+          <template scope="scope"> {{ scope.row.fields.sostore }}件 </template>
+          </el-table-column>
+          <el-table-column label="操作">
             <template slot-scope="scope">
-              <el-table :data="scope.row.fields.scene">
-                <template slot="empty"> 暂无场次，点此添加<br>
-                  <el-button size="mini" type="primary" @click.native="insert_scene()">添加</el-button>
-                </template>
-                <el-table-column label="影厅">
-                <template slot-scope="scope"> {{ scope.row.hname }} </template>
-                </el-table-column>
-                <el-table-column label="电影名称">
-                <template slot-scope="scope"> {{ scope.row.mname }} </template>
-                </el-table-column>
-                <el-table-column label="上映时间">
-                <template slot-scope="scope"> {{ showTime(scope.row.ontime) }} </template>
-                </el-table-column>
-                <el-table-column label="时长" min-width="50%">
-                <template slot-scope="scope"> {{ scope.row.time }}分 </template>
-                </el-table-column>
-                <el-table-column label="票价" min-width="50%">
-                <template slot-scope="scope"> {{ scope.row.price }} </template>
-                </el-table-column>
-                 <el-table-column label="操作" min-width="130%">
-                    <template slot-scope="scope">
-                      <el-button size="mini" type="primary" @click.native="insert_scene(scope.row.cno)">添加</el-button>
-                      <el-button size="mini" @click.native="update_scene(scope.row)">编辑</el-button>
-                      <el-button size="mini" type="danger" 
-                      @click.native="sceneModel.last_pk=scope.row.sno; delDialogVisible = true">
-                      删除</el-button>
-                    </template>
-                  </el-table-column>
-              </el-table>
+              <el-button size="mini" type="primary" @click.native="insert_sou">添加</el-button>
+              <el-button size="mini" @click.native="update_sou(scope.row)">编辑</el-button>
+              <el-button size="mini" type="danger" 
+              @click.native="movieModel.last_name=scope.row.fields.mname; delDialogVisible = true">
+              删除</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -194,41 +159,31 @@
     data() {
       return {
         id: 0,
-        sceneList: [],
-        cinemaList: [],
-        hallList: [],
         emp_list: [],
         movieList: [],
         reverse: false,
         delDialogVisible: false,
-        sceneDialogVisible: false,
+        souDialogVisible: false,
         logoutDialogVisible: false,
-        new_scene: false,
-        sceneModel: { last_pk: -1, cno: 0, hno: 0, mno: 0, ontime: '', offtime: '', price: ''},
-        sceneRules: {
-          cno: [{ required: true, message: '请选择影院', trigger: 'blur' }],
-          hno: [{ required: true, message: '请选择影厅', trigger: 'blur' }],
-          mno: [{ required: true, message: '请选择电影', trigger: 'blur' }],
-          ontime: [{ required: true, message: '请选择上映时间', trigger: 'blur' }],
-          price: [{ required: true, message: '请输入价格', trigger: 'blur' }]
+        new_sou: false,
+        sort_type: 'mname',
+        reverse: false,
+        souModel: { soname:'', sostore:0, mno:0 },
+        souRules: {
+          soname: [{ required: true, message: '请选择影院', trigger: 'blur' }],
+          sostore: [{ required: true, message: '请输入库存', trigger: 'blur' }],
+          mno: [{ required: true, message: '请选择电影', trigger: 'blur' }]
         }
       }
     },
     mounted: function() {
       this.init(),
       this.showemp(),
-      this.showScene(),
-      this.getHall(),
+      this.showMovie(),
+      this.showSou(),
       this.onInput()
     },
     watch: {
-        'sceneModel.cno': {
-          handler(newName, oldName) {
-            this.getHallList();
-          },
-          immediate: true,
-          deep: true
-        }
     },
     methods: {
       onInput(){
@@ -266,51 +221,35 @@
               }
           })
       },
-      showScene(){
-        console.log("show scene")
-        this.$http.get('http://127.0.0.1:8000/api/show_scene')
+      showMovie() {
+        console.log("show movie")
+        this.$http.post('http://127.0.0.1:8000/api/show_movie',
+          JSON.stringify({curFilm:true, curDate:new Date(), r:this.reverse, t:this.sort_type}), {emulateJSON: true})
           .then((response) => {
-            var res = JSON.parse(response.bodyText)
-            if (res.error_num == 0) {
-              this.sceneList = res.list
-            } else {
-               this.$message.error('删除电影失败')
-               console.log(res['msg'])
-            }
+              var res = JSON.parse(response.bodyText)
+              if (res.error_num == 0) {
+                var curDate = new Date()
+                this.movieList = res['list']
+              } else {
+                this.$message.error('查询电影失败')
+                console.log(res['msg'])
+              }
           })
       },
-      getHall(){
-        console.log("get hall")
-        this.$http.post('http://127.0.0.1:8000/api/show_hall_movie',
-          JSON.stringify({curDate:new Date()}), {emulateJSON: true})
+      showSou(){
+        console.log("show sou")
+        this.$http.post('http://127.0.0.1:8000/api/show_sou',
+          JSON.stringify({curSou:false, r:this.reverse, t:this.sort_type}), {emulateJSON: true})
           .then((response) => {
-            var res = JSON.parse(response.bodyText)
-            if (res.error_num == 0) {
-              this.cinemaList = res.clist
-              this.movieList = res.mlist
-              this.getHallList()
-            } else {
-               this.$message.error('获取影院信息失败')
-               console.log(res['msg'])
-            }
+              var res = JSON.parse(response.bodyText)
+              if (res.error_num == 0) {
+                this.souList = res['list']
+                this.souCount = this.souList.length
+              } else {
+                this.$message.error('查询周边失败')
+                console.log(res['msg'])
+              }
           })
-      },
-      getHallList() {
-        var i = 0, j = 0;
-        var tmp_hno = 0;
-        for (i = 0; i < this.cinemaList.length; i++) {
-          if (this.cinemaList[i].cno == this.sceneModel.cno) {
-            this.hallList = this.cinemaList[i].hall;
-            if (this.hallList.length > 0)
-              tmp_hno = this.hallList[0].hno;
-            for (j = 0; j < this.hallList.length; j++) {
-              if (this.hallList[j].hno == this.sceneModel.hno)
-                return;
-            }
-            this.sceneModel.hno = tmp_hno;
-            return;
-          }
-        }
       },
       logout() {
         this.logoutDialogVisible = true // 显示弹框
@@ -320,36 +259,34 @@
         sessionStorage.setItem("token", 'false');
         this.$router.push("/");
       },
-      insert_scene(cno_tmp){
-        this.new_scene = true;
-        var d = new Date();
+      insert_sou(){
+        this.new_sou = true;
         this.sceneModel = { 
-          last_pk: 0, 
-          cno: cno_tmp, 
-          hno: 0, 
-          mno: 0, 
-          price: 70, 
-          ontime:new Date(), 
-          offtime:new Date() };
-        this.getHallList();
-        if (this.hallList.length > 0)
-          this.sceneModel.mno = this.movieList[0].fields.mno;
-        this.sceneDialogVisible = true;
+          mno: this.movieList[0].pk,
+          soname:'', sostore:0
+        };
+        this.souDialogVisible = true;
       },
-      update_scene(scope){
-        this.new_scene = false;
-        this.sceneModel = { 
-          cno: scope.cno,
-          last_pk: 0,
-          hno: scope.hno,
-          mno: scope.mno, 
-          price: scope.price, 
-          ontime: scope.ontime, 
-          offtime: scope.offtime };
-        this.sceneDialogVisible = true;
+      update_sou(scope){
+        var i = 0, get = 0;
+        for (i = 0; i < this.movieList.length; i++) {
+            if (this.movieList[i].pk == scope.mno) {
+              get = 1;
+              return;
+            }
+        }
+        if (get == 0) {
+            this.$message.error('不能修改已经下架或暂未上架电影的周边');
+            return;
+        }
+        this.new_sou = false;
+        this.souModel = { 
+          mno: scope.mno,
+          soname:scope_soname, sostore:scope.sostore };
+        this.souDialogVisible = true;
       },
-      confirmScene(){
-        if (this.new_scene) {
+      confirmSou(){
+        if (this.new_sou) {
           this.$http.post('http://127.0.0.1:8000/api/insert_scene',
           JSON.stringify(this.sceneModel), {emulateJSON: true})
           .then((response) => {
@@ -403,8 +340,8 @@
       to_movie() {
         this.$router.push({ path: '/empmovie', query: {id: this.id} })
       },
-      to_sou() {
-        this.$router.push({ path: '/empsou', query: {id: this.id} })
+      to_scene() {
+        this.$router.push({ path: '/empscene', query: {id: this.id} })
       }
     }
   };

@@ -44,6 +44,7 @@
   :visible.sync="creditDialogVisible"
   width="30%"
   :before-close="handleClose">
+    <span>请输入要充值的金额</span><br><br>
     <el-input-number v-model="credits" @change="handleChange" :min="100" :step="10"></el-input-number><br><br><br>
     <el-button style="margin-top:20px" round @click="confirmCredits" type="primary">确 定 </el-button>
     <el-button round @click="creditDialogVisible = false">取 消</el-button>
@@ -54,6 +55,8 @@
     @select="handleSelect" style = "float: left">
       <el-menu-item index="1" @click="to_movie">电影</el-menu-item>
       <el-menu-item index="2">场次</el-menu-item>
+      <el-menu-item index="3" @click="to_sou">周边</el-menu-item>
+      <el-menu-item index="4" @click="to_myticket">我的</el-menu-item>
     </el-menu>
     <el-button round @click="logout">注 销</el-button>
   </el-header>
@@ -326,6 +329,12 @@
       },
       to_movie() {
         this.$router.push({ path: '/vipmovie', query: {id: this.id} })
+      },
+      to_sou() {
+        this.$router.push({ path: '/vipsou', query: {id: this.id} })
+      },
+      to_myticket() {
+        this.$router.push({ path: '/vipmyticket', query: {id: this.id} })
       },
       total_price() {
         return parseInt(this.ticketModel.ticketList.length * this.price * this.vip_list.sale);

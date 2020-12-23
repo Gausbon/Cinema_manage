@@ -3,6 +3,9 @@ import Router from 'vue-router'
 import Movie from '@/components/Movie'
 import VipMovie from '@/components/VipMovie'
 import VipScene from '@/components/VipScene'
+import VipSou from '@/components/VipSou'
+import VipMyTicket from '@/components/VipMyTicket'
+import VipMySou from '@/components/VipMySou'
 import EmpMovie from '@/components/EmpMovie'
 import EmpScene from '@/components/EmpScene'
 
@@ -21,10 +24,7 @@ const router = new Router({
       component: Movie,
       meta: {
         title: "柒伍捌电影院"
-      },
-      children: [
-
-      ]
+      }
     },
     {
        path: '/vipmovie',
@@ -45,6 +45,33 @@ const router = new Router({
        },
      },
      {
+       path: '/vipsou',
+       name: 'VipSou',
+       component: VipSou,
+       meta: {
+         title: "柒伍捌电影院",
+         requireAuth: true
+       },
+     },
+     {
+       path: '/vipmyticket',
+       name: 'VipMyTicket',
+       component: VipMyTicket,
+       meta: {
+         title: "柒伍捌电影院",
+         requireAuth: true
+       },
+     },
+     {
+       path: '/vipmysou',
+       name: 'VipMySou',
+       component: VipMySou,
+       meta: {
+         title: "柒伍捌电影院",
+         requireAuth: true
+       },
+     },
+     {
        path: '/empmovie',
        name: 'EmpMovie',
        component: EmpMovie,
@@ -57,6 +84,15 @@ const router = new Router({
        path: '/empscene',
        name: 'EmpScene',
        component: EmpScene,
+       meta: {
+         title: "柒伍捌电影院",
+         requireAuth: true
+       },
+     },
+     {
+       path: '/empsou',
+       name: 'EmpSou',
+       component: EmpSou,
        meta: {
          title: "柒伍捌电影院",
          requireAuth: true

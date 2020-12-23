@@ -452,7 +452,117 @@ def show_ticket(request):
     dict = json.loads(request.body)
     try:
         t = models.All_ticket.objects.filter(vno=dict['id'])
-        response['ticket'] = json.loads(serializers.serialize("json", t))
+        response['list'] = json.loads(serializers.serialize("json", t))
+        response['msg'] = 'success'
+        response['error_num'] = 0
+    except Exception as e:
+        response['error_num'] = 1
+        response['msg'] = str(e)
+    return JsonResponse(response)
+
+
+@require_http_methods(["GET", "POST"])
+@csrf_exempt
+def ret_ticket(request):
+    print("method: ret ticket")
+    response = {}
+    dict = json.loads(request.body)
+    try:
+        t = models.Ticket.objects.get(tno=dict['retid'])
+        price = t.price
+        v = t.vno
+        v.vaccount += (price/2)
+        t.delete()
+        v.save()
+        response['msg'] = 'success'
+        response['error_num'] = 0
+    except Exception as e:
+        response['error_num'] = 1
+        response['msg'] = str(e)
+    return JsonResponse(response)
+
+
+@require_http_methods(["GET", "POST"])
+@csrf_exempt
+def show_sou(request):
+    print("method: show sou")
+    response = {}
+    dict = json.loads(request.body)
+    try:
+        t = dict['t']
+        if dict['r']:
+            t = '-' + t
+        if dict['curSou']:
+            s = models.All_sou.objects.filter(online__lt=dict['curDate'], offline__gt=dict['curDate']).order_by(t)
+        else:
+            s = models.All_sou.objects.filter().order_by(t)
+        response['list'] = json.loads(serializers.serialize("json", s))
+        response['msg'] = 'success'
+        response['error_num'] = 0
+    except Exception as e:
+        response['error_num'] = 1
+        response['msg'] = str(e)
+    return JsonResponse(response)
+
+
+@require_http_methods(["GET", "POST"])
+@csrf_exempt
+def add_sou(request):
+    print("method: add sou")
+    response = {}
+    dict = json.loads(request.body)
+    try:
+        v = models.Vip.objects.get(vno=dict['vno'])
+        s = models.Sou.objects.get(sono=dict['sono'])
+        v.vaccount -= dict['num'] * int(s.soprice * v.vlevel.vsale)
+        for i in range(dict['num']):
+            models.Sousingle.objects.create(
+                sono=s,
+                vno=v,
+                price=int(s.soprice * v.vlevel.vsale)
+            )
+        response['msg'] = 'success'
+        response['error_num'] = 0
+    except Exception as e:
+        response['error_num'] = 1
+        response['msg'] = str(e)
+    return JsonResponse(response)
+
+
+@require_http_methods(["GET", "POST"])
+@csrf_exempt
+def show_sousingle(request):
+    print("method: show sousingle")
+    response = {}
+    dict = json.loads(request.body)
+    try:
+        t = dict['t']
+        if dict['r']:
+            t = '-' + t
+
+        s = models.All_sousingle.objects.filter(vno=dict['id']).order_by(t)
+        response['list'] = json.loads(serializers.serialize("json", s))
+        response['msg'] = 'success'
+        response['error_num'] = 0
+    except Exception as e:
+        response['error_num'] = 1
+        response['msg'] = str(e)
+    return JsonResponse(response)
+
+
+@require_http_methods(["GET", "POST"])
+@csrf_exempt
+def ret_sou(request):
+    print("method: ret sou")
+    response = {}
+    dict = json.loads(request.body)
+    try:
+        ss = models.Sousingle.objects.get(sosno=dict['retid'])
+        price = ss.price
+        v = ss.vno
+        v.vaccount += (price/2)
+        ss.delete()
+        v.save()
         response['msg'] = 'success'
         response['error_num'] = 0
     except Exception as e:
