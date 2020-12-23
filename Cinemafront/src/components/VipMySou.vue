@@ -106,7 +106,7 @@
           <el-header style = "background-color: #ffffff; text-align: right">
             <el-menu default-active="2" class="el-menu-demo" mode="horizontal" 
             @select="handleSelect">
-              <el-menu-item index="1">我的电影票</el-menu-item>
+              <el-menu-item index="1" @click="to_myticket">我的电影票</el-menu-item>
               <el-menu-item index="2">我的周边</el-menu-item>
             </el-menu>
           </el-header>
@@ -280,6 +280,9 @@
       },
       to_movie() {
         this.$router.push({ path: '/vipmovie', query: {id: this.id} })
+      },
+      to_myticket() {
+        this.$router.push({ path: '/vipmyticket', query: {id: this.id} })
       },
       to_sou() {
         this.$router.push({ path: '/vipsou', query: {id: this.id} })

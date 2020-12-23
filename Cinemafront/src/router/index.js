@@ -8,6 +8,8 @@ import VipMyTicket from '@/components/VipMyTicket'
 import VipMySou from '@/components/VipMySou'
 import EmpMovie from '@/components/EmpMovie'
 import EmpScene from '@/components/EmpScene'
+import EmpSou from '@/components/EmpSou'
+import EmpBill from '@/components/EmpBill'
 
 Vue.use(Router)
 
@@ -93,6 +95,15 @@ const router = new Router({
        path: '/empsou',
        name: 'EmpSou',
        component: EmpSou,
+       meta: {
+         title: "柒伍捌电影院",
+         requireAuth: true
+       },
+     },
+     {
+       path: '/empbill',
+       name: 'EmpBill',
+       component: EmpBill,
        meta: {
          title: "柒伍捌电影院",
          requireAuth: true

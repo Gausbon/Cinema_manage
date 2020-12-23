@@ -113,16 +113,16 @@
       <el-main>
 
         <el-table :data="souList">
-          <el-table-column prop="name" label="电影名称">
+          <el-table-column label="电影名称">
           <template scope="scope"> {{ scope.row.fields.mname }} </template>
           </el-table-column>
-          <el-table-column prop="address" label="周边名称">
+          <el-table-column label="周边名称">
           <template scope="scope"> {{ scope.row.fields.soname }} </template>
           </el-table-column>
-          <el-table-column prop="address" label="售价">
+          <el-table-column label="售价">
           <template scope="scope"> {{ scope.row.fields.soprice }} </template>
           </el-table-column>
-          <el-table-column prop="address" label="库存">
+          <el-table-column label="库存">
           <template scope="scope"> {{ scope.row.fields.sostore }} </template>
           </el-table-column>
           <el-table-column label="操作">
@@ -266,7 +266,7 @@
           this.$message.error('购买失败，您的余额不足！');
           return;
         }
-        this.$http.post('http://127.0.0.1:8000/api/add_sou',
+        this.$http.post('http://127.0.0.1:8000/api/buy_sou',
           JSON.stringify({vno: this.id, sono: this.sou_scope.pk, num: this.sounum }), {emulateJSON: true})
           .then((response) => {
               var res = JSON.parse(response.bodyText)

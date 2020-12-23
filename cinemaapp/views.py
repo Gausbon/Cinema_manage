@@ -507,8 +507,8 @@ def show_sou(request):
 
 @require_http_methods(["GET", "POST"])
 @csrf_exempt
-def add_sou(request):
-    print("method: add sou")
+def buy_sou(request):
+    print("method: buy sou")
     response = {}
     dict = json.loads(request.body)
     try:
@@ -567,5 +567,70 @@ def ret_sou(request):
         response['error_num'] = 0
     except Exception as e:
         response['error_num'] = 1
+        response['msg'] = str(e)
+    return JsonResponse(response)
+
+
+@require_http_methods(["GET", "POST"])
+@csrf_exempt
+def add_sou(request):
+    print("method: add sou")
+    response = {}
+    dict = json.loads(request.body)
+    try:
+        models.Sou.objects.create(
+            mno=models.Movie.objects.get(mno=dict['mno']),
+            soname=dict['soname'],
+            soprice=dict['soprice'],
+            sostore=dict['sostore']
+        )
+        response['msg'] = 'success'
+        response['error_num'] = 0
+    except Exception as e:
+        response['error_num'] = 1
+        response['msg'] = str(e)
+    return JsonResponse(response)
+
+
+@require_http_methods(["GET", "POST"])
+@csrf_exempt
+def update_sou(request):
+    print("method: update sou")
+    response = {}
+    dict = json.loads(request.body)
+    try:
+        so = models.Sou.objects.get(sono=dict['id'])
+        so.mno = models.Movie.objects.get(mno=dict['mno'])
+        so.soname = dict['soname']
+        so.soprice = dict['soprice']
+        so.sostore = dict['sostore']
+        so.save()
+        response['msg'] = 'success'
+        response['error_num'] = 0
+    except Exception as e:
+        if type(e) == IntegrityError:
+            response['error_num'] = 2
+        else:
+            response['error_num'] = 1
+        response['msg'] = str(e)
+    return JsonResponse(response)
+
+
+@require_http_methods(["GET", "POST"])
+@csrf_exempt
+def delete_sou(request):
+    print("method: delete sou")
+    response = {}
+    dict = json.loads(request.body)
+    try:
+        so = models.Sou.objects.get(sono=dict['id'])
+        so.delete()
+        response['msg'] = 'success'
+        response['error_num'] = 0
+    except Exception as e:
+        if type(e) == ProtectedError:
+            response['error_num'] = 2
+        else:
+            response['error_num'] = 1
         response['msg'] = str(e)
     return JsonResponse(response)

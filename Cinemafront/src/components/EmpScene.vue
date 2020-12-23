@@ -65,7 +65,8 @@
     @select="handleSelect" style = "float: left">
       <el-menu-item index="1" @click="to_movie">电影</el-menu-item>
       <el-menu-item index="2">场次</el-menu-item>
-      <el-menu-item index="3" @click="to_sou">电影</el-menu-item>
+      <el-menu-item index="3" @click="to_sou">周边</el-menu-item>
+      <el-menu-item index="4" @click="to_bill">流水</el-menu-item>
     </el-menu>
     <el-button round @click="logout">注 销</el-button>
   </el-header>
@@ -231,6 +232,14 @@
         }
     },
     methods: {
+      init() {
+        if (sessionStorage.getItem("type") != 'emp') {
+            sessionStorage.setItem("token", 'false')
+            this.$router.push({ path: '/' })
+        }
+        this.id = this.$route.query.id
+        console.log(this.id);
+      },
       onInput(){
         this.$forceUpdate();
       },
@@ -251,7 +260,6 @@
         return output+date.getMinutes();
       },
       showemp(){
-        this.id = this.$route.query.id
         console.log("show emp")
         this.$http.post('http://127.0.0.1:8000/api/show_employee',
           JSON.stringify({id: this.id}), {emulateJSON: true})
@@ -405,6 +413,9 @@
       },
       to_sou() {
         this.$router.push({ path: '/empsou', query: {id: this.id} })
+      },
+      to_bill() {
+        this.$router.push({ path: '/empbill', query: {id: this.id} })
       }
     }
   };

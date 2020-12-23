@@ -21,7 +21,10 @@ urlpatterns = [
     url(r'show_ticket$', views.show_ticket),
     url(r'ret_ticket$', views.ret_ticket),
     url(r'show_sou$', views.show_sou),
-    url(r'add_sou$', views.add_sou),
+    url(r'buy_sou$', views.buy_sou),
     url(r'show_sousingle$', views.show_sousingle),
     url(r'ret_sou$', views.ret_sou),
+    url(r'add_sou$', views.add_sou),
+    url(r'update_sou$', views.update_sou),
+    url(r'delete_sou$', views.delete_sou)
 ]

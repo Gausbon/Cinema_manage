@@ -120,6 +120,7 @@ class Sousingle(models.Model):
 
 
 class All_sou(models.Model):
+    mno = models.IntegerField()
     mname = models.CharField(max_length=30)
     soname = models.CharField(max_length=30)
     soprice = models.IntegerField()
