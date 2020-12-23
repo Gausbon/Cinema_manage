@@ -55,6 +55,23 @@
 
       <el-main>
         <div id="echarts_box" style="width: 600px;height:400px;"></div>
+        <el-table :data="billList">
+          <el-table-column prop="name" label="人员类型">
+          <template scope="scope"> {{ scope.row.fields.type }} </template>
+          </el-table-column>
+          <el-table-column prop="address" label="人员id">
+          <template scope="scope"> {{ scope.row.fields.num }} </template>
+          </el-table-column>
+          <el-table-column prop="address" label="流水">
+          <template scope="scope"> {{ scope.row.fields.value }}元 </template>
+          </el-table-column>
+          <el-table-column prop="address" label="事项">
+          <template scope="scope"> {{ scope.row.fields.reason }} </template>
+          </el-table-column>
+          <el-table-column prop="address" label="时间">
+          <template scope="scope"> {{ showDate(scope.row.fields.date, false) }} </template>
+          </el-table-column>
+        </el-table>
       </el-main>
     </el-container>
   </el-container>
@@ -80,31 +97,36 @@
       return {
         id: 0,
         emp_list: [],
+        billList: [],
         logoutDialogVisible: false,
-        option = {
-            title: {
-                text: '流水图标'
-            },
+        option: {
+            title: { text: '流水图表' },
             tooltip: {},
-            legend: {
-                data:['销量']
-            },
-            xAxis: {
-                data: ["衬衫","羊毛衫","雪纺衫","裤子","高跟鞋","袜子"]
-            },
+            legend: { data:['入账','出账'] },
+            xAxis: { data: [],     
+            axisLabel: {  
+              interval:0,  
+              rotate:40  
+            }},
             yAxis: {},
             series: [{
-                name: '销量',
+                name: '入账',
                 type: 'bar',
-                data: [5, 20, 36, 10, 10, 20]
+                data: []
+            },
+            {
+                name: '出账',
+                type: 'bar',
+                data: []
             }]
-        };
+        }
       }
     },
     mounted: function() {
       this.init(),
       this.showemp(),
-      this.drawCharts()
+      this.showBill(),
+      this.showAllBill()
     },
     created() {},
     watch: {
@@ -117,13 +139,16 @@
         }
         this.id = this.$route.query.id
         console.log(this.id);
+        var curd = new Date();
+        var curdtmp = new Date();
+        var i = 7;
+        for (i = 7; i >= 0; i--) {
+          var d = new Date(curdtmp.setTime(curd.getTime()-i*24*60*60*1000))
+          this.option.xAxis.data.push(this.showDate(d,true));
+        }
       },
       onInput(){
         this.$forceUpdate();
-      },
-      drawCharts() {
-		    var myChart = echarts.init(document.getElementById('echarts_box'))
-		    myChart.setOption(this.option)
       },
       showemp(){
         console.log("show emp")
@@ -140,6 +165,41 @@
               }
           })
       },
+      showBill(){
+        var d = new Date();
+        console.log("show bill")
+        this.$http.post('http://127.0.0.1:8000/api/show_bill',
+          JSON.stringify({minDate: new Date(d.setTime(d.getTime()-7*24*60*60*1000)) }), {emulateJSON: true})
+          .then((response) => {
+              var res = JSON.parse(response.bodyText)
+              if (res.error_num == 0) {
+                this.billList = res['list']
+              } else {
+                this.$message.error('查询流水失败')
+                console.log(res['msg'])
+              }
+          })
+      },
+      showAllBill(){
+        var d = new Date();
+        console.log("all bill")
+        this.$http.post('http://127.0.0.1:8000/api/show_allbill',
+          JSON.stringify({minDate: this.toDate(new Date(d.setTime(d.getTime()-7*24*60*60*1000)))}), {emulateJSON: true})
+          .then((response) => {
+              var res = JSON.parse(response.bodyText)
+              if (res.error_num == 0) {
+                console.log("all_bill" + this.option.series[1].data);
+                this.option.series[0].data = res['inbill'];
+                this.option.series[1].data = res['outbill'];
+                console.log("all_bill" + this.option.series[1].data);
+                var myChart = echarts.init(document.getElementById('echarts_box'))
+		            myChart.setOption(this.option)
+              } else {
+                this.$message.error('查询流水失败')
+                console.log(res['msg'])
+              }
+          })
+      },
       logout() {
         this.logoutDialogVisible = true // 显示弹框
       },
@@ -147,6 +207,31 @@
         this.$message({ type: 'success', message: '注销成功!'});
         sessionStorage.setItem("token", 'false');
         this.$router.push("/");
+      },
+      showDate(d,b){
+        var date = new Date(d);
+        var output;
+        if (b)
+          output = "";
+        else output = date.getFullYear()+"年"
+
+        if (date.getMonth()+1 < 10)
+          output = output + "0"
+        output = output + (date.getMonth()+1)+"月"
+        if (date.getDate() < 10)
+          output = output + "0"
+        return output+date.getDate()+"日";
+      },
+      toDate(d){
+        var date = new Date(d);
+        var output = date.getFullYear() + "-"
+
+        if (date.getMonth()+1 < 10)
+          output = output + "0"
+        output = output + (date.getMonth()+1)+"-"
+        if (date.getDate() < 10)
+          output = output + "0"
+        return output+date.getDate();
       },
       strip(str) {
         return str.replace(/\s*/g,"")

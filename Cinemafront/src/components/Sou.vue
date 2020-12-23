@@ -46,13 +46,13 @@
   </el-dialog>
 
   <el-header style = "background-color: #ffffff; text-align: right">
-    <el-menu default-active="1" class="el-menu-demo" mode="horizontal" 
+    <el-menu default-active="2" class="el-menu-demo" mode="horizontal" 
     @select="handleSelect" style = "float: left">
-      <el-menu-item index="1">电影</el-menu-item>
-      <el-menu-item index="2" @click="to_sou()">周边</el-menu-item>
+      <el-menu-item index="1"  @click="to_movie">电影</el-menu-item>
+      <el-menu-item index="2">周边</el-menu-item>
     </el-menu>
     <el-button type="primary" round @click="login()">登 录</el-button>
-    <el-button round @click="reg()">注 册</el-button>
+    <el-button round  @click="reg()">注 册</el-button>
   </el-header>
 
   <el-container style="height: 600px">
@@ -60,33 +60,33 @@
       <el-header style="text-align: right; font-size: 12px">
         <el-container>
           <el-aside>
-            <span style="font-size: 130%; float: left">目前上映影片数量：{{movieCount}}</span>
+            <span style="font-size: 130%; float: left">目前周边数量：{{souCount}}</span>
           </el-aside>
           <el-main></el-main>
           <el-aside width = "300px" mode="horizontal">
             <el-dropdown :hide-on-click="false">
-                <el-button v-if="sort_type=='online'"> <span>日期</span>
+                <el-button v-if="sort_type=='soname'"> <span>周边名称</span>
                   <i class="el-icon-sort-up" v-if="reverse==false"></i>
                   <i class="el-icon-sort-down" v-if="reverse==true"></i>
                 </el-button>
-                <el-button v-else-if="sort_type=='mname'"> <span>名称</span>
+                <el-button v-else-if="sort_type=='mname'"> <span>电影名称</span>
                   <i class="el-icon-sort-up" v-if="reverse==false"></i>
                   <i class="el-icon-sort-down" v-if="reverse==true"></i>
                 </el-button>
-                <el-button v-else-if="sort_type=='type'"> <span>类型</span>
+                <el-button v-else-if="sort_type=='soprice'"> <span>售价</span>
                   <i class="el-icon-sort-up" v-if="reverse==false"></i>
                   <i class="el-icon-sort-down" v-if="reverse==true"></i>
                 </el-button>
                 <el-dropdown-menu slot="dropdown">
                 <el-dropdown-item>
-                  <el-radio-group v-model="reverse" @click.native="showMovies()">
+                  <el-radio-group v-model="reverse">
                     <el-radio :label="false">正序</el-radio>
                     <el-radio :label="true">倒序</el-radio>
                   </el-radio-group>
                 </el-dropdown-item>
-                <el-dropdown-item @click.native="sort_type='online'; showMovies()">日期</el-dropdown-item>
-                <el-dropdown-item @click.native="sort_type='mname'; showMovies()">名称</el-dropdown-item>
-                <el-dropdown-item @click.native="sort_type='type'; showMovies()">类型</el-dropdown-item>
+                <el-dropdown-item @click.native="sort_type='soname'; showSou()">周边名称</el-dropdown-item>
+                <el-dropdown-item @click.native="sort_type='mname'; showSou()">电影名称</el-dropdown-item>
+                <el-dropdown-item @click.native="sort_type='soprice'; showSou()">售价</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
           </el-aside>
@@ -94,27 +94,18 @@
       </el-header>
 
       <el-main>
-        <el-table :data="movieList">
-          <el-table-column prop="name" label="电影名称">
+        <el-table :data="souList">
+          <el-table-column label="电影名称">
           <template scope="scope"> {{ scope.row.fields.mname }} </template>
           </el-table-column>
-          <el-table-column prop="address" label="导演">
-          <template scope="scope"> {{ scope.row.fields.director }} </template>
+          <el-table-column label="周边名称">
+          <template scope="scope"> {{ scope.row.fields.soname }} </template>
           </el-table-column>
-          <el-table-column prop="address" label="主演">
-          <template scope="scope"> {{ scope.row.fields.actor }} </template>
+          <el-table-column label="售价">
+          <template scope="scope"> {{ scope.row.fields.soprice }} </template>
           </el-table-column>
-          <el-table-column prop="address" label="类型">
-          <template scope="scope"> {{ scope.row.fields.type }} </template>
-          </el-table-column>
-          <el-table-column prop="address" label="时长">
-          <template scope="scope"> {{ scope.row.fields.time }} </template>
-          </el-table-column>
-          <el-table-column prop="address" label="上映时间">
-          <template scope="scope"> {{showDate(scope.row.fields.online)}} </template>
-          </el-table-column>
-          <el-table-column prop="address" label="下映时间">
-          <template scope="scope"> {{ showDate(scope.row.fields.offline) }} </template>
+          <el-table-column label="库存">
+          <template scope="scope"> {{ scope.row.fields.sostore }} </template>
           </el-table-column>
         </el-table>
       </el-main>
@@ -146,9 +137,9 @@
           }
       };
       return {
-        movieList: [],
-        movieCount: 0,
-        sort_type: 'online',
+        souList: [],
+        souCount: 0,
+        sort_type: 'mname',
         loginDialogVisible: false,
         regDialogVisible: false,
         reverse: false,
@@ -166,11 +157,11 @@
       }
     },
     mounted: function() {
-      this.showMovies(),
+      this.showSou(),
       this.onInput()
     },
     watch: {
-      reverse: 'showMovies'
+      reverse: 'showSou'
     },
     methods: {
       onInput(){
@@ -186,23 +177,23 @@
           output = output + "0"
         return output+date.getDate()+"日";
       },
-      showMovies(){
-        console.log("show movie")
-        this.$http.post('http://127.0.0.1:8000/api/show_movie',
-          JSON.stringify({curFilm:true, curDate : new Date(), r:this.reverse, t:this.sort_type}), {emulateJSON: true})
+      showSou(){
+        console.log("show sou")
+        this.$http.post('http://127.0.0.1:8000/api/show_sou',
+          JSON.stringify({curSou:true, curDate : new Date(), r:this.reverse, t:this.sort_type}), {emulateJSON: true})
           .then((response) => {
               var res = JSON.parse(response.bodyText)
               if (res.error_num == 0) {
-                var curDate = new Date()
-                this.movieList = res['list']
-                this.movieCount = this.movieList.length
+                this.souList = res['list']
+                this.souCount = this.souList.length
               } else {
-                this.$message.error('查询电影失败')
+                this.$message.error('查询周边失败')
                 console.log(res['msg'])
               }
           })
       },
       login() {
+        this.loginModel = { name: '', pass: '' };
         this.loginDialogVisible = true // 显示弹框
       },
       reg() {
@@ -232,7 +223,6 @@
           JSON.stringify(this.loginModel), {emulateJSON: true})
           .then((response) => {
               var res = JSON.parse(response.bodyText)
-              console.log(res)
               if (res.error_num == 0) {
                 if (res.type == "vip") {
                   console.log('vip login, vip num = ' + res.id)
@@ -256,8 +246,8 @@
               }
           })
       },
-      to_sou() {
-        this.$router.push({path: '/sou'})
+      to_movie() {
+        this.$router.push({path: '/'})
       }
     }
   };

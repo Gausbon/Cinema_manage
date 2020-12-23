@@ -348,7 +348,7 @@
         this.new_scene = false;
         this.sceneModel = { 
           cno: scope.cno,
-          last_pk: 0,
+          last_pk: scope.sno,
           hno: scope.hno,
           mno: scope.mno, 
           price: scope.price, 

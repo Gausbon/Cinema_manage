@@ -4,9 +4,9 @@ from . import views
 urlpatterns = [
     url(r'show_movie$', views.show_movie),
     url(r'login$', views.login),
+    url(r'reg$', views.reg),
     url(r'show_vip$', views.show_vip),
     url(r'show_employee$', views.show_employee),
-    url(r'show_boss$', views.show_boss),
     url(r'update_movie$', views.update_movie),
     url(r'insert_movie$', views.insert_movie),
     url(r'delete_movie$', views.delete_movie),
@@ -26,5 +26,7 @@ urlpatterns = [
     url(r'ret_sou$', views.ret_sou),
     url(r'add_sou$', views.add_sou),
     url(r'update_sou$', views.update_sou),
-    url(r'delete_sou$', views.delete_sou)
+    url(r'delete_sou$', views.delete_sou),
+    url(r'show_bill$', views.show_bill),
+    url(r'show_allbill$', views.show_allbill)
 ]

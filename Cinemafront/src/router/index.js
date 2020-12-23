@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import Movie from '@/components/Movie'
+import Sou from '@/components/Sou'
 import VipMovie from '@/components/VipMovie'
 import VipScene from '@/components/VipScene'
 import VipSou from '@/components/VipSou'
@@ -24,6 +25,14 @@ const router = new Router({
       path: '/',
       name: 'Movie',
       component: Movie,
+      meta: {
+        title: "柒伍捌电影院"
+      }
+    },
+    {
+      path: '/sou',
+      name: 'Sou',
+      component: Sou,
       meta: {
         title: "柒伍捌电影院"
       }

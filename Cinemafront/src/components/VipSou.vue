@@ -75,7 +75,7 @@
       <el-header style="text-align: right; font-size: 12px">
         <el-container>
           <el-aside>
-            <span style="font-size: 130%; float: left">目前上映影片数量：{{movieCount}}</span>
+            <span style="font-size: 130%; float: left">目前周边数量：{{souCount}}</span>
           </el-aside>
           <el-main></el-main>
           <el-aside mode="horizontal">
@@ -111,7 +111,6 @@
       </el-header>
 
       <el-main>
-
         <el-table :data="souList">
           <el-table-column label="电影名称">
           <template scope="scope"> {{ scope.row.fields.mname }} </template>
@@ -156,6 +155,7 @@
         id: 0,
         credits: 0,
         sounum: 0,
+        soCount: 0,
         sou_scope: {fields: 0},
         souList: [],
         vip_list: [],

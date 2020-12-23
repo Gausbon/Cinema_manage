@@ -58,18 +58,44 @@ def login(request):
             print("login vip, vip no." + str(field_dict['num']))
             response['type'] = 'vip'
             response['id'] = field_dict['num']
-        elif field_dict['type'].strip() == '电影管理'.strip():
+        elif field_dict['type'].strip() == 'emp'.strip():
             print("login employee, employee no." + str(field_dict['num']))
-            response['type'] = 'movie'
-            response['id'] = field_dict['num']
-        else:
-            print("login boss, boss no." + str(field_dict['num']))
-            response['type'] = 'boss'
+            response['type'] = 'emp'
             response['id'] = field_dict['num']
 
     except Exception as e:
         response['msg'] = str(e)
         response['error_num'] = 1
+    return JsonResponse(response)
+
+@require_http_methods(["GET", "POST"])
+@csrf_exempt
+def reg(request):
+    print("method: reg")
+    response = {}
+    dict = json.loads(request.body)
+    try:
+        models.Vip.objects.create(
+            vname=dict['name'],
+            vlevel=models.Vip_level.objects.get(vlevel='vip'),
+            vaccount=0,
+            vstarttime=dict['date']
+        )
+        models.User.objects.create(
+            name=dict['name'],
+            upass=dict['pass'],
+            num=models.Vip.objects.get(vname=dict['name']).vno,
+            type='vip'
+        )
+        response['msg'] = 'success'
+        response['error_num'] = 0
+    except Exception as e:
+        if type(e) == IntegrityError:
+            response['error_num'] = 2
+        else:
+            response['error_num'] = 1
+        response['msg'] = str(e)
+
     return JsonResponse(response)
 
 
@@ -103,28 +129,10 @@ def show_employee(request):
     dict = json.loads(request.body)
     print("show employee id: " + dict['id'])
     try:
-        employee = models.Employee.objects.filter(~Q(epart='boss'), eno=int(dict['id']))
+        employee = models.Employee.objects.filter(eno=int(dict['id']))
         response['msg'] = 'success'
         response['error_num'] = 0
         response['list'] = json.loads(serializers.serialize("json", employee))[0]['fields']
-    except Exception as e:
-        response['msg'] = str(e)
-        response['error_num'] = 1
-    return JsonResponse(response)
-
-
-@require_http_methods(["GET", "POST"])
-@csrf_exempt
-def show_boss(request):
-    print("method: show vip")
-    response = {}
-    dict = json.loads(request.body)
-    print("show boss id: " + dict['id'])
-    try:
-        boss = models.Vip.objects.filter(epart='boss', eno=int(dict['id']))
-        response['msg'] = 'success'
-        response['error_num'] = 0
-        response['list'] = json.loads(serializers.serialize("json", boss))[0]['fields']
     except Exception as e:
         response['msg'] = str(e)
         response['error_num'] = 1
@@ -625,6 +633,60 @@ def delete_sou(request):
     try:
         so = models.Sou.objects.get(sono=dict['id'])
         so.delete()
+        response['msg'] = 'success'
+        response['error_num'] = 0
+    except Exception as e:
+        if type(e) == ProtectedError:
+            response['error_num'] = 2
+        else:
+            response['error_num'] = 1
+        response['msg'] = str(e)
+    return JsonResponse(response)
+
+
+@require_http_methods(["GET", "POST"])
+@csrf_exempt
+def show_bill(request):
+    print("method: show bill")
+    response = {}
+    dict = json.loads(request.body)
+    print(dict)
+    try:
+        l = models.Bill.objects.filter(date__gte=dict['minDate'])
+        response['list'] = json.loads(serializers.serialize("json", l))
+        response['msg'] = 'success'
+        response['error_num'] = 0
+    except Exception as e:
+        if type(e) == ProtectedError:
+            response['error_num'] = 2
+        else:
+            response['error_num'] = 1
+        response['msg'] = str(e)
+    return JsonResponse(response)
+
+
+@require_http_methods(["GET", "POST"])
+@csrf_exempt
+def show_allbill(request):
+    print("method: show all bill")
+    response = {}
+    dict = json.loads(request.body)
+    print(dict)
+    try:
+        l = models.All_Bill.objects.filter(date__gte=dict['minDate']).order_by('date')
+        l = json.loads(serializers.serialize("json", l))
+        inlist = []
+        outlist = []
+        print(len(l))
+        if len(l) < 8:
+            for i in range(8 - len(l)):
+                inlist.append(0)
+                outlist.append(0)
+        for item in l:
+            inlist.append(item['fields']['inbill'])
+            outlist.append(item['fields']['outbill'])
+        response['inbill'] = inlist
+        response['outbill'] = outlist
         response['msg'] = 'success'
         response['error_num'] = 0
     except Exception as e:

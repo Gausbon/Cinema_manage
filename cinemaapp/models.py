@@ -32,7 +32,6 @@ class Vip(models.Model):
     vlevel = models.ForeignKey(Vip_level, on_delete=models.PROTECT)
     vaccount = models.IntegerField()
     vstarttime = models.DateTimeField()
-    vendtime = models.DateTimeField()
 
 
 class Employee(models.Model):
@@ -119,6 +118,15 @@ class Sousingle(models.Model):
     price = models.IntegerField()
 
 
+class Bill(models.Model):
+    bno = models.AutoField(primary_key=True)
+    type = models.CharField(max_length=30)
+    num = models.IntegerField()
+    value = models.IntegerField()
+    reason = models.CharField(max_length=30)
+    date = models.DateTimeField()
+
+
 class All_sou(models.Model):
     mno = models.IntegerField()
     mname = models.CharField(max_length=30)
@@ -135,3 +143,9 @@ class All_sousingle(models.Model):
     price = models.IntegerField()
     vname = models.CharField(max_length=30)
     vno = models.IntegerField()
+
+
+class All_Bill(models.Model):
+    inbill = models.IntegerField()
+    outbill = models.IntegerField()
+    date = models.DateField()
