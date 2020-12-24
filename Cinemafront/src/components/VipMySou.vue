@@ -81,7 +81,7 @@
                   <i class="el-icon-sort-up" v-if="reverse==false"></i>
                   <i class="el-icon-sort-down" v-if="reverse==true"></i>
                 </el-button>
-                <el-button v-else-if="sort_type=='soprice'"> <span>价格</span>
+                <el-button v-else-if="sort_type=='price'"> <span>价格</span>
                   <i class="el-icon-sort-up" v-if="reverse==false"></i>
                   <i class="el-icon-sort-down" v-if="reverse==true"></i>
                 </el-button>
@@ -94,7 +94,7 @@
                 </el-dropdown-item>
                 <el-dropdown-item @click.native="sort_type='soname'; showSousingle()">周边名称</el-dropdown-item>
                 <el-dropdown-item @click.native="sort_type='mname'; showSousingle()">电影名称</el-dropdown-item>
-                <el-dropdown-item @click.native="sort_type='soprice'; showSousingle()">价格</el-dropdown-item>
+                <el-dropdown-item @click.native="sort_type='price'; showSousingle()">价格</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
           </el-aside>
@@ -177,6 +177,7 @@
       this.onInput()
     },
     watch: {
+      reverse: 'showSousingle'
     },
     methods: {
       onInput(){

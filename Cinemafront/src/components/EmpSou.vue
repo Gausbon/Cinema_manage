@@ -84,7 +84,7 @@
       <el-header style="text-align: right; font-size: 12px">
         <el-container>
           <el-aside>
-            <span style="font-size: 130%; float: left">目前上映影片数量：{{movieCount}}</span>
+            <span style="font-size: 130%; float: left">目前周边数量：{{souCount}}</span>
           </el-aside>
           <el-main></el-main>
           <el-aside mode="horizontal">
@@ -176,6 +176,7 @@
         movieList: [],
         emp_list: [],
         new_sou: false,
+        souCount: 0,
         last_sono: 0,
         last_soname: '',
         souModel: { mno: 0, soname: '', soprice: 0, sostore:0 },
@@ -252,6 +253,7 @@
               var res = JSON.parse(response.bodyText)
               if (res.error_num == 0) {
                 this.souList = res['list']
+                this.souCount = this.souList.length;
               } else {
                 this.$message.error('查询周边失败')
                 console.log(res['msg'])
